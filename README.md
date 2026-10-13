@@ -52,5 +52,5 @@ omnitech/
 | Учасник | Роль | Внесок |
 |---|---|---|
 | Дмитрук Назар ([@Hyrysake](https://github.com/Hyrysake)) | Team Lead | каркас застосунку, `base.html`, головна сторінка |
-| Махнюк Андрій ([@azureflarez](https://github.com/azureflarez)) | Developer | сторінки «Про нас» і «Контакти» |
+| Махнюк Андрій ([@rotterdamsterdam](https://github.com/rotterdamsterdam)) | Developer | сторінки «Про нас» і «Контакти» |
 | Бардюк Станіслав ([@st009bar-dot](https://github.com/st009bar-dot)) | QA | сторінка «Часті питання», темна тема, перевірка адаптивності, рев'ю |
