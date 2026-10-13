@@ -24,6 +24,17 @@
         <p class="reveal mt-5 max-w-xl text-base leading-relaxed text-stone-200 sm:text-lg" style="--i: 1">
             Ноутбуки, смартфони, ігрові аксесуари та фототехніка в Луцьку. З офіційною гарантією та чесною порадою.
         </p>
+        <div class="reveal mt-8 flex flex-wrap gap-3" style="--i: 2">
+            {# Головна кнопка: золота, білий текст. active:scale-[0.97] — кнопка ледь «втискається» під час натискання #}
+            <a href="#popular" class="inline-flex items-center gap-2 rounded-full bg-gold px-6 py-3 font-semibold text-white transition duration-200 hover:bg-yellow-800 active:scale-[0.97] dark:bg-gold-bright dark:text-ink dark:hover:bg-yellow-500">
+                Популярні товари
+                <i class="ph ph-arrow-down" aria-hidden="true"></i>
+            </a>
+            {# Другорядна кнопка в «скляному» стилі: напівпрозора, з розмиттям фото під нею #}
+            <a href="#features" class="inline-flex items-center rounded-full border border-white/30 bg-white/15 px-6 py-3 font-semibold text-paper backdrop-blur-md transition duration-200 hover:bg-white/25 active:scale-[0.97] reduced-transparency:bg-coal reduced-transparency:backdrop-blur-none">
+                Чому ми
+            </a>
+        </div>
     </div>
 </section>
 
@@ -63,6 +74,33 @@
             <h3 class="mt-5 text-lg font-semibold">Налаштування в подарунок</h3>
             <p class="mt-2 leading-relaxed text-muted dark:text-muted-dark">Перенесемо дані зі старого телефона і встановимо потрібні програми.</p>
         </div>
+    </div>
+</section>
+
+{# Популярні товари. Список products приходить з app.py,
+   а цикл for будує однакову картку для кожного товару #}
+<section id="popular" class="mt-20 md:mt-28">
+    <h2 class="font-display text-4xl font-semibold tracking-tight sm:text-5xl">Популярні товари</h2>
+    <div class="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {% for product in products %}
+        {# group: коли курсор над карткою (group-hover), фото в ній трохи збільшується #}
+        <article class="reveal-on-scroll group overflow-hidden rounded-2xl border border-line bg-card transition-shadow duration-300 hover:shadow-xl dark:border-line-dark dark:bg-coal">
+            <div class="overflow-hidden">
+                <img
+                    src="{{ product.image }}" alt="{{ product.name }}"
+                    width="600" height="450" loading="lazy"
+                    class="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+            </div>
+            <div class="p-5">
+                <p class="text-xs font-semibold uppercase tracking-wider text-gold dark:text-gold-bright">{{ product.category }}</p>
+                <h3 class="mt-2 font-semibold">{{ product.name }}</h3>
+                {# tabular-nums: усі цифри однакової ширини, ціни в сусідніх картках рівні.
+                   "{:,}".format(32999) дає "32,999"; replace міняє кому на пробіл: "32 999" #}
+                <p class="mt-4 text-xl font-semibold tabular-nums">{{ "{:,}".format(product.price).replace(",", " ") }} грн</p>
+            </div>
+        </article>
+        {% endfor %}
     </div>
 </section>
 
