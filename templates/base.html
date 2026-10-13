@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <!-- viewport: на телефоні сторінка береться за ширину екрана, а не зменшується як сайт для ПК -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Кожна сторінка підставляє в блок title свою назву: «Головна | OmniTech» -->
+    <title>{% block title %}{% endblock %} | OmniTech</title>
+
+    <!-- Шрифти з дизайн-системи ui-ux-pro-max: Cormorant (заголовки) і Montserrat (основний текст).
+         Обидва мають кирилицю, тому українські літери малюються тим самим шрифтом -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,500;0,600;0,700;1,500&family=Montserrat:wght@400;500;600&display=swap">
+    <!-- Іконки Phosphor: <i class="ph ph-truck"></i> показує іконку вантажівки -->
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.2/src/regular/style.css">
+    <!-- Tailwind CSS 4 через CDN (для навчання та прототипів) -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <style type="text/tailwindcss">
+        /* Дизайн-система як «токени»: у шаблонах пишемо bg-paper або text-gold,
+           а не шістнадцяткові коди. Щоб змінити колір на всьому сайті, досить змінити його тут */
+        @theme {
+            --font-display: "Cormorant", ui-serif, Georgia, serif;
+            --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+
+            --color-paper: #FAFAF9;        /* фон сторінки у світлій темі */
+            --color-card: #FFFFFF;         /* фон карток */
+            --color-ink: #0C0A09;          /* основний текст; фон у темній темі */
+            --color-coal: #1C1917;         /* основний колір: темні блоки, картки в темній темі */
+            --color-graphite: #44403C;     /* другорядний колір: пункти меню */
+            --color-muted: #57534E;        /* приглушений текст у світлій темі */
+            --color-muted-dark: #A8A29E;   /* приглушений текст у темній темі */
+            --color-line: #D6D3D1;         /* рамки у світлій темі */
+            --color-line-dark: #292524;    /* рамки у темній темі */
+            --color-gold: #A16207;         /* акцент: кнопки, іконки (білий текст на ньому читається, 4.9:1) */
+            --color-gold-bright: #CA8A04;  /* той самий акцент, світліший, для темної теми */
+        }
+
+        /* Варіант reduced-transparency: діє, коли в системі ввімкнено «Зменшити прозорість».
+           Тоді «скляне» меню стає звичайним непрозорим, щоб текст гарантовано читався */
+        @custom-variant reduced-transparency (@media (prefers-reduced-transparency: reduce));
+    </style>
+    <style>
+        /* Липке меню не повинне закривати те, до чого перейшли за якорем (#popular) або клавішею Tab */
+        html { scroll-padding-top: 6rem; }
+
+        /* Золота рамка навколо посилання чи кнопки, коли по сайту ходять клавішею Tab */
+        :focus-visible {
+            outline: 2px solid #A16207;
+            outline-offset: 3px;
+            border-radius: 8px;
+        }
+
+        /* На телефоні браузер не чекає 300 мс, чи це не подвійний дотик, а одразу реагує */
+        a, button, summary { touch-action: manipulation; }
+
+        /* Анімації вмикаються лише тоді, коли користувач не просив їх зменшити
+           (налаштування «Зменшити рух» у Windows, iOS, Android) */
+        @media (prefers-reduced-motion: no-preference) {
+            html { scroll-behavior: smooth; }
+
+            /* Поява під час завантаження. --i — номер елемента: кожен наступний
+               з'являється на 60 мс пізніше, тому блоки виходять «хвилею» */
+            .reveal {
+                animation: rise 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+                animation-delay: calc(var(--i, 0) * 60ms);
+            }
+
+            /* Поява блоку, коли до нього догортають. Працює в браузерах,
+               що підтримують animation-timeline; в інших блок просто видно одразу */
+            @supports (animation-timeline: view()) {
+                .reveal-on-scroll {
+                    animation: rise linear both;
+                    animation-timeline: view();
+                    animation-range: entry 0% entry 30%;
+                }
+            }
+        }
+
+        /* Анімуються лише прозорість і зсув (transform): браузер робить це без перерахунку сторінки */
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(16px) scale(0.98); }
+            to { opacity: 1; transform: none; }
+        }
+
+        /* Мобільне меню: поява 300 мс, зникнення швидше, 180 мс */
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: none; }
+        }
+        @keyframes slideUp {
+            from { opacity: 1; transform: none; }
+            to { opacity: 0; transform: translateY(-8px); }
+        }
+        .animate-slide-down {
+            animation: slideDown 0.3s ease-out forwards;
+        }
+        .animate-slide-up {
+            animation: slideUp 0.18s ease-in forwards;
+        }
+        /* Три лінії «бургера»: верхня, середня, нижня */
+        .burger-line {
+            transition: all 0.3s ease-in-out;
+        }
+        .line1 { top: 4px; }
+        .line2 { top: 11px; }
+        .line3 { top: 18px; }
+        /* Відкрите меню: верхня й нижня лінії утворюють хрестик, середня зникає */
+        .open .line1 {
+            transform: translateY(7px) rotate(45deg);
+        }
+        .open .line2 {
+            opacity: 0;
+        }
+        .open .line3 {
+            transform: translateY(-7px) rotate(-45deg);
+        }
+    </style>
+</head>
+
+{# Макрос — шаблон, який можна викликати багато разів з різними параметрами, як функцію.
+   Він малює один пункт меню. request.endpoint — ім'я функції поточної сторінки ('home', 'about'...).
+   Якщо пункт веде на поточну сторінку, він стає темною «пігулкою» і отримує aria-current="page",
+   щоб і людина, і екранна читалка знали, де вона зараз #}
+{% macro nav_link(endpoint, label, mobile=False) %}
+    {% set active = request.endpoint == endpoint %}
+    <a href="{{ url_for(endpoint) }}"{% if active %} aria-current="page"{% endif %}
+       class="{% if mobile %}block rounded-xl px-4 py-3 text-base{% else %}rounded-full px-4 py-2 text-sm{% endif %} font-medium transition-colors duration-200 {% if active %}bg-coal text-paper dark:bg-paper dark:text-ink{% else %}text-graphite hover:bg-coal/5 dark:text-stone-300 dark:hover:bg-white/10{% endif %}">
+        {{ label }}
+    </a>
+{% endmacro %}
+
+<!-- flex flex-col + min-h-dvh + flex-grow у main: футер завжди внизу, навіть на короткій сторінці -->
+<body class="flex min-h-dvh flex-col bg-paper font-sans text-ink antialiased dark:bg-ink dark:text-paper">
+    <!-- Посилання для тих, хто ходить по сайту клавішею Tab: видно лише у фокусі,
+         дозволяє одразу перейти до вмісту, минаючи меню -->
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-coal focus:px-5 focus:py-3 focus:text-paper">
+        Перейти до вмісту
+    </a>
+
+    <!-- «Скляне» меню (стиль Liquid Glass з дизайн-системи): напівпрозорий фон + розмиття того,
+         що прокручується під ним. sticky top-0 — меню лишається вгорі під час прокрутки -->
+    <header class="sticky top-0 z-40 px-3 pt-3 sm:px-4">
+        <nav aria-label="Головне меню"
+             class="mx-auto max-w-7xl rounded-2xl border border-white/60 bg-white/65 shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_8px_32px_rgba(28,25,23,0.10)] backdrop-blur-xl backdrop-saturate-150 reduced-transparency:bg-card reduced-transparency:backdrop-blur-none dark:border-white/10 dark:bg-coal/65 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_32px_rgba(0,0,0,0.45)] dark:reduced-transparency:bg-coal">
+            <div class="flex h-16 items-center justify-between gap-4 pl-4 pr-2">
+                <!-- Логотип — одночасно посилання на головну -->
+                <a href="{{ url_for('home') }}" class="flex items-center gap-2.5">
+                    <span class="grid size-9 place-items-center rounded-xl bg-coal text-gold-bright dark:bg-paper dark:text-gold">
+                        <i class="ph ph-cpu text-xl" aria-hidden="true"></i>
+                    </span>
+                    <span class="font-display text-2xl font-semibold tracking-tight">OmniTech</span>
+                </a>
+
+                <div class="flex items-center gap-1">
+                    <!-- Меню для широких екранів: приховане (hidden), а від ширини md (768px) — видиме -->
+                    <div class="hidden md:flex items-center gap-1">
+                        {{ nav_link('home', 'Головна') }}
+                    </div>
+
+                    <!-- Кнопка меню для мобільних пристроїв (md:hidden — зникає на широких екранах).
+                         Розмір 44×44 px — мінімальна зручна ціль для пальця -->
+                    <button id="mobile-menu-button" type="button" aria-label="Відкрити меню" aria-expanded="false" aria-controls="mobile-menu"
+                            class="md:hidden grid size-11 cursor-pointer place-items-center rounded-xl transition-colors duration-200 hover:bg-coal/5 dark:hover:bg-white/10">
+                        <span class="relative block h-6 w-6">
+                            <span class="burger-line line1 absolute left-0 block h-0.5 w-6 rounded-full bg-current"></span>
+                            <span class="burger-line line2 absolute left-0 block h-0.5 w-6 rounded-full bg-current"></span>
+                            <span class="burger-line line3 absolute left-0 block h-0.5 w-6 rounded-full bg-current"></span>
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Мобільне меню (приховане за замовчуванням, відкривається кнопкою-бургером) -->
+            <div id="mobile-menu" class="hidden md:hidden space-y-1 px-2 pb-3">
+                {{ nav_link('home', 'Головна', mobile=True) }}
+            </div>
+        </nav>
+    </header>
+
+    <!-- Сюди кожна сторінка вставляє свій вміст (блок content).
+         id="main" — ціль посилання «Перейти до вмісту»; max-w-7xl обмежує ширину на великих моніторах -->
+    <main id="main" tabindex="-1" class="mx-auto w-full max-w-7xl flex-grow px-4 pb-20 pt-8 outline-none sm:px-6 md:pt-12 lg:px-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="border-t border-line dark:border-line-dark">
+        <div class="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8 dark:text-muted-dark">
+            <p class="font-display text-xl font-semibold text-ink dark:text-paper">OmniTech</p>
+            <p>© 2026 OmniTech. Навчальний проєкт групи ІПЗ-22</p>
+        </div>
+    </footer>
+
+    <script>
+        // ----- Мобільне меню -----
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuButton.addEventListener('click', () => {
+            // toggle додає клас, якщо його немає, і прибирає, якщо є; повертає true, коли клас додано
+            const isOpen = mobileMenuButton.classList.toggle('open');
+            mobileMenuButton.setAttribute('aria-expanded', isOpen);
+            mobileMenuButton.setAttribute('aria-label', isOpen ? 'Закрити меню' : 'Відкрити меню');
+
+            if (isOpen) {
+                // Відкриваємо: показуємо блок і запускаємо анімацію появи
+                mobileMenu.classList.remove('hidden', 'animate-slide-up');
+                mobileMenu.classList.add('animate-slide-down');
+            } else {
+                // Закриваємо: анімація зникнення, а через 180 мс (її тривалість) ховаємо блок
+                mobileMenu.classList.remove('animate-slide-down');
+                mobileMenu.classList.add('animate-slide-up');
+                setTimeout(() => {
+                    mobileMenu.classList.add('hidden');
+                }, 180);
+            }
+        });
+    </script>
+</body>
+</html>
