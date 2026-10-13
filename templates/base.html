@@ -157,6 +157,8 @@
                     <!-- Меню для широких екранів: приховане (hidden), а від ширини md (768px) — видиме -->
                     <div class="hidden md:flex items-center gap-1">
                         {{ nav_link('home', 'Головна') }}
+                        {{ nav_link('about', 'Про нас') }}
+                        {{ nav_link('contacts', 'Контакти') }}
                     </div>
 
                     <!-- Кнопка меню для мобільних пристроїв (md:hidden — зникає на широких екранах).
@@ -175,6 +177,8 @@
             <!-- Мобільне меню (приховане за замовчуванням, відкривається кнопкою-бургером) -->
             <div id="mobile-menu" class="hidden md:hidden space-y-1 px-2 pb-3">
                 {{ nav_link('home', 'Головна', mobile=True) }}
+                {{ nav_link('about', 'Про нас', mobile=True) }}
+                {{ nav_link('contacts', 'Контакти', mobile=True) }}
             </div>
         </nav>
     </header>

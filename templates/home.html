@@ -122,4 +122,17 @@
         </figure>
     </div>
 </section>
+
+{# Заклик завітати до магазину. Кнопка веде на сторінку «Контакти», тому блок з'являється
+   разом із нею: без маршруту contacts функція url_for('contacts') дала б помилку BuildError #}
+<section class="reveal-on-scroll mt-20 flex flex-col gap-8 rounded-3xl bg-coal px-6 py-12 text-paper sm:px-12 sm:py-16 md:mt-28 md:flex-row md:items-center md:justify-between dark:border dark:border-line-dark">
+    <div class="max-w-xl">
+        <h2 class="font-display text-4xl font-semibold tracking-tight sm:text-5xl">Приходьте подивитися наживо</h2>
+        <p class="mt-4 text-lg leading-relaxed text-stone-300">Усю техніку можна потримати в руках і порівняти до покупки.</p>
+    </div>
+    <a href="{{ url_for('contacts') }}" class="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-gold-bright px-6 py-3 font-semibold text-ink transition duration-200 hover:bg-yellow-500 active:scale-[0.97] md:self-auto">
+        Контакти
+        <i class="ph ph-arrow-right" aria-hidden="true"></i>
+    </a>
+</section>
 {% endblock %}
