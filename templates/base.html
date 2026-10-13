@@ -40,7 +40,21 @@
         /* Варіант reduced-transparency: діє, коли в системі ввімкнено «Зменшити прозорість».
            Тоді «скляне» меню стає звичайним непрозорим, щоб текст гарантовано читався */
         @custom-variant reduced-transparency (@media (prefers-reduced-transparency: reduce));
+
+        /* Темна тема вмикається класом .dark на тегу <html>.
+           Без цього правила варіант dark: реагує лише на тему операційної системи. */
+        @custom-variant dark (&:where(.dark, .dark *));
     </style>
+    <script>
+        // Вмикаємо збережену тему ще ДО відмалювання сторінки,
+        // інакше при кожному переході на мить «спалахувала» б світла тема.
+        // Якщо користувач ще нічого не обирав, беремо тему з налаштувань системи.
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (savedTheme === 'dark' || (savedTheme === null && systemPrefersDark)) {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
     <style>
         /* Липке меню не повинне закривати те, до чого перейшли за якорем (#popular) або клавішею Tab */
         html { scroll-padding-top: 6rem; }
@@ -159,7 +173,17 @@
                         {{ nav_link('home', 'Головна') }}
                         {{ nav_link('about', 'Про нас') }}
                         {{ nav_link('contacts', 'Контакти') }}
+                        {{ nav_link('faq', 'Часті питання') }}
                     </div>
+
+                    <!-- Перемикач теми. Яку іконку показати, вирішує CSS:
+                         місяць видно у світлій темі (dark:hidden), сонце — у темній (hidden dark:inline-block).
+                         aria-pressed повідомляє екранній читалці, чи темна тема зараз увімкнена -->
+                    <button id="theme-toggle" type="button" aria-label="Темна тема" aria-pressed="false"
+                            class="grid size-11 cursor-pointer place-items-center rounded-xl text-graphite transition-colors duration-200 hover:bg-coal/5 dark:text-stone-300 dark:hover:bg-white/10">
+                        <i class="ph ph-moon text-xl dark:hidden" aria-hidden="true"></i>
+                        <i class="ph ph-sun text-xl hidden dark:inline-block" aria-hidden="true"></i>
+                    </button>
 
                     <!-- Кнопка меню для мобільних пристроїв (md:hidden — зникає на широких екранах).
                          Розмір 44×44 px — мінімальна зручна ціль для пальця -->
@@ -179,6 +203,7 @@
                 {{ nav_link('home', 'Головна', mobile=True) }}
                 {{ nav_link('about', 'Про нас', mobile=True) }}
                 {{ nav_link('contacts', 'Контакти', mobile=True) }}
+                {{ nav_link('faq', 'Часті питання', mobile=True) }}
             </div>
         </nav>
     </header>
@@ -219,6 +244,19 @@
                     mobileMenu.classList.add('hidden');
                 }, 180);
             }
+        });
+
+        // ----- Перемикач теми -----
+        const themeToggle = document.getElementById('theme-toggle');
+        // Одразу показуємо в aria-pressed, яка тема зараз (її міг увімкнути скрипт у <head>)
+        themeToggle.setAttribute('aria-pressed', document.documentElement.classList.contains('dark'));
+
+        themeToggle.addEventListener('click', () => {
+            // Додаємо або прибираємо клас .dark на <html>; isDark = true, якщо тема стала темною
+            const isDark = document.documentElement.classList.toggle('dark');
+            themeToggle.setAttribute('aria-pressed', isDark);
+            // Запам'ятовуємо вибір у браузері, щоб він зберігся на інших сторінках і після перезапуску
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
         });
     </script>
 </body>
