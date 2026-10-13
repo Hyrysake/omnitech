@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Контакти{% endblock %}
+
+{% block content %}
+<header class="max-w-3xl">
+    <h1 class="reveal font-display text-5xl font-semibold tracking-tight sm:text-6xl">Контакти</h1>
+    <p class="reveal mt-4 text-lg leading-relaxed text-muted dark:text-muted-dark" style="--i: 1">
+        Приходьте в магазин або зателефонуйте. Відповідаємо протягом робочого дня.
+    </p>
+</header>
+
+{# Від ширини lg: дані ліворуч (5 колонок із 12), карта праворуч (7).
+   На телефоні й планшеті карта стоїть під даними #}
+<div class="mt-12 grid grid-cols-1 gap-4 lg:grid-cols-12">
+    <div class="flex flex-col gap-4 lg:col-span-5">
+        {# Значення беруться зі словника contacts, який передає функція contacts() у app.py #}
+        <div class="reveal rounded-2xl bg-coal p-8 text-paper dark:border dark:border-line-dark" style="--i: 2">
+            <p class="text-sm text-stone-400">Телефон</p>
+            {# tel: — на телефоні натискання відкриває набір номера #}
+            <a href="tel:{{ contacts.phone_link }}" class="mt-1 block text-2xl font-semibold tabular-nums transition-colors hover:text-gold-bright sm:text-3xl">{{ contacts.phone }}</a>
+            <p class="mt-6 text-sm text-stone-400">Email</p>
+            {# mailto: — натискання відкриває поштову програму з уже вписаною адресою.
+               break-all дозволяє перенести довгу адресу на вузькому екрані #}
+            <a href="mailto:{{ contacts.email }}" class="mt-1 block break-all text-lg font-medium transition-colors hover:text-gold-bright">{{ contacts.email }}</a>
+        </div>
+
+        <div class="reveal flex gap-4 rounded-2xl border border-line bg-card p-6 dark:border-line-dark dark:bg-coal" style="--i: 3">
+            <span class="grid size-12 shrink-0 place-items-center rounded-full bg-gold/10 text-gold dark:bg-gold-bright/15 dark:text-gold-bright">
+                <i class="ph ph-map-pin text-2xl" aria-hidden="true"></i>
+            </span>
+            <div>
+                <p class="text-sm text-muted dark:text-muted-dark">Адреса</p>
+                <p class="mt-1 text-lg font-semibold">{{ contacts.address }}</p>
+            </div>
+        </div>
+
+        <div class="reveal rounded-2xl border border-line bg-card p-6 dark:border-line-dark dark:bg-coal" style="--i: 4">
+            <div class="flex items-center gap-4">
+                <span class="grid size-12 shrink-0 place-items-center rounded-full bg-gold/10 text-gold dark:bg-gold-bright/15 dark:text-gold-bright">
+                    <i class="ph ph-clock text-2xl" aria-hidden="true"></i>
+                </span>
+                <h2 class="text-lg font-semibold">Графік роботи</h2>
+            </div>
+            {# dl — «список визначень»: пари «назва: значення». Один рядок на кожен день графіка.
+               divide-y малює тонку лінію між рядками #}
+            <dl class="mt-4 divide-y divide-line dark:divide-line-dark">
+                {% for row in contacts.schedule %}
+                <div class="flex justify-between gap-4 py-3">
+                    <dt class="text-muted dark:text-muted-dark">{{ row.days }}</dt>
+                    <dd class="font-semibold tabular-nums">{{ row.hours }}</dd>
+                </div>
+                {% endfor %}
+            </dl>
+        </div>
+    </div>
+
+    {# Карта OpenStreetMap вбудовується через iframe — «вікно» з іншим сайтом усередині сторінки.
+       Рамка й заокруглення стоять на обгортці <div>, а не на самому iframe: фільтри нижче
+       змінюють кольори всього елемента разом із рамкою, і в темній темі вона стала б світлою.
+       min-h-[24rem]: не нижча за 384 px; на широкому екрані тягнеться на всю висоту лівої колонки #}
+    <div class="reveal min-h-[24rem] overflow-hidden rounded-2xl border border-line lg:col-span-7 dark:border-line-dark" style="--i: 3">
+        {# grayscale робить карту сірою, щоб її кольори не сперечалися з дизайном сайту;
+           у темній темі dark:invert-92 інвертує її: світла карта стає темною #}
+        <iframe
+            src="{{ contacts.map_url }}"
+            title="Карта: розташування магазину OmniTech"
+            loading="lazy"
+            class="block h-full min-h-[24rem] w-full grayscale contrast-105 dark:invert-92 dark:contrast-90"
+        ></iframe>
+    </div>
+</div>
+{% endblock %}
