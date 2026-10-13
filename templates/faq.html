@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Часті питання{% endblock %}
+
+{% block content %}
+{# Від ширини lg: вступ ліворуч (4 колонки із 12) і список питань праворуч (8).
+   lg:sticky — під час прокрутки довгого списку вступ лишається на місці #}
+<div class="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14">
+    <header class="self-start lg:sticky lg:top-28 lg:col-span-4">
+        <h1 class="reveal font-display text-5xl font-semibold tracking-tight sm:text-6xl">Часті питання</h1>
+        <p class="reveal mt-4 text-lg leading-relaxed text-muted dark:text-muted-dark" style="--i: 1">
+            Доставка, оплата, гарантія і повернення. Не знайшли відповіді?
+        </p>
+        <a href="{{ url_for('contacts') }}" class="reveal mt-6 inline-flex items-center gap-2 rounded-full bg-gold px-6 py-3 font-semibold text-white transition duration-200 hover:bg-yellow-800 active:scale-[0.97] dark:bg-gold-bright dark:text-ink dark:hover:bg-yellow-500" style="--i: 2">
+            Зв'язатися з нами
+            <i class="ph ph-arrow-right" aria-hidden="true"></i>
+        </a>
+    </header>
+
+    {# Окрема картка для кожного питання зі списку faq_items (передається з app.py).
+       <details> і <summary> — вбудований у HTML «акордеон»: відповідь розгортається
+       по кліку без жодного рядка JavaScript #}
+    <div class="space-y-3 lg:col-span-8">
+        {% for item in faq_items %}
+        <details class="reveal group rounded-2xl border border-line bg-card px-6 py-5 transition-shadow duration-300 open:shadow-lg sm:px-7 dark:border-line-dark dark:bg-coal" style="--i: {{ loop.index }}">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-6 text-lg font-semibold">
+                {# loop.index — номер поточного проходу циклу, починаючи з 1 #}
+                <span><span class="mr-3 text-base text-gold tabular-nums dark:text-gold-bright">{{ loop.index }}</span>{{ item.question }}</span>
+                {# Коли блок відкритий (group-open), плюс повертається на 45° і стає хрестиком #}
+                <span class="grid size-9 shrink-0 place-items-center rounded-full bg-gold/10 text-gold transition-transform duration-300 group-open:rotate-45 dark:bg-gold-bright/15 dark:text-gold-bright">
+                    <i class="ph ph-plus text-lg" aria-hidden="true"></i>
+                </span>
+            </summary>
+            <p class="mt-4 max-w-[65ch] leading-relaxed text-muted dark:text-muted-dark">{{ item.answer }}</p>
+        </details>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
