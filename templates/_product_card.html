@@ -1,0 +1,22 @@
+{# Картка одного товару. Підключається всередині циклу: {% include "_product_card.html" %}
+   Змінна product береться з цього циклу. Файл починається з підкреслення, бо це частина сторінки,
+   а не окрема сторінка. Уся картка, крім кнопки кошика, є посиланням на сторінку товару #}
+<article class="reveal-on-scroll group flex flex-col overflow-hidden rounded-2xl border border-line bg-card transition-shadow duration-300 hover:shadow-xl dark:border-line-dark dark:bg-coal">
+    <a href="{{ url_for('shop.product', product_id=product.id) }}" class="block">
+        <div class="overflow-hidden">
+            <img
+                src="{{ product.image }}" alt="{{ product.name }}"
+                width="600" height="450" loading="lazy"
+                class="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+        </div>
+        <div class="p-5 pb-3">
+            <p class="text-xs font-semibold uppercase tracking-wider text-gold dark:text-gold-bright">{{ product.category }}</p>
+            <h3 class="mt-2 font-semibold">{{ product.name }}</h3>
+        </div>
+    </a>
+    <div class="mt-auto flex items-center justify-between gap-3 px-5 pb-5">
+        {# tabular-nums: усі цифри однакової ширини, ціни в сусідніх картках рівні #}
+        <p class="text-xl font-semibold tabular-nums">{{ product.price|money }} грн</p>
+    </div>
+</article>

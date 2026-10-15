@@ -16,6 +16,7 @@ from flask import Flask, render_template
 
 import db
 from models.catalog import get_featured_products
+from routes.shop import shop_bp
 
 # Створюємо застосунок. Змінна __name__ підказує Flask, де лежить цей файл,
 # щоб він знайшов поруч теку templates/ з HTML-шаблонами.
@@ -29,6 +30,9 @@ app.config['DATABASE'] = os.environ.get('OMNITECH_DB') or os.path.join(app.root_
 db.init_app(app)
 with app.app_context():
     db.init_db()
+
+# Blueprint — окремий файл зі своїми маршрутами. Підключаємо їх до застосунку.
+app.register_blueprint(shop_bp)
 
 
 @app.template_filter('money')
@@ -125,6 +129,15 @@ FAQ = [
 def faq():
     """Сторінка «Часті питання»: список питань, що розгортаються по кліку."""
     return render_template('faq.html', faq_items=FAQ)
+
+
+# ==================== Сторінки помилок ====================
+
+@app.errorhandler(404)
+def page_not_found(error):
+    """Сторінка не знайдена (наприклад, товару з таким номером немає)."""
+    return render_template('error.html', code=404, title='Сторінку не знайдено',
+                           text='Можливо, адресу введено з помилкою або товар уже прибрали з каталогу.'), 404
 
 
 # ==================== Запуск ====================

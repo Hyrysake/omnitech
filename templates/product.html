@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+{# «Хлібні крихти»: показують, де користувач зараз, і дають вернутися на крок назад #}
+<nav aria-label="Шлях до сторінки" class="reveal text-sm text-muted dark:text-muted-dark">
+    <ol class="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <li><a href="{{ url_for('shop.catalog') }}" class="underline-offset-4 hover:underline">Каталог</a></li>
+        <li aria-hidden="true">/</li>
+        <li><a href="{{ url_for('shop.catalog', category=product.category_id) }}" class="underline-offset-4 hover:underline">{{ product.category }}</a></li>
+        <li aria-hidden="true">/</li>
+        <li aria-current="page" class="text-ink dark:text-paper">{{ product.name }}</li>
+    </ol>
+</nav>
+
+<article class="mt-6 grid grid-cols-1 items-start gap-8 lg:grid-cols-2 lg:gap-14">
+    <div class="reveal overflow-hidden rounded-3xl border border-line bg-card dark:border-line-dark dark:bg-coal" style="--i: 1">
+        <img src="{{ product.image }}" alt="{{ product.name }}" width="900" height="675" fetchpriority="high"
+             class="aspect-[4/3] w-full object-cover">
+    </div>
+
+    <div class="reveal flex flex-col" style="--i: 2">
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="{{ url_for('shop.catalog', category=product.category_id) }}"
+               class="text-xs font-semibold uppercase tracking-wider text-gold hover:underline dark:text-gold-bright">{{ product.category }}</a>
+            {% if product.is_featured %}
+            <span class="rounded-full bg-gold/10 px-3 py-1 text-xs font-semibold text-gold dark:bg-gold-bright/15 dark:text-gold-bright">Популярний товар</span>
+            {% endif %}
+        </div>
+        <h1 class="mt-3 font-display text-4xl font-semibold leading-tight tracking-tight text-balance sm:text-5xl">{{ product.name }}</h1>
+        <p class="mt-6 text-4xl font-semibold tabular-nums">{{ product.price|money }} грн</p>
+
+        {# Опис у базі може бути порожнім: тоді просто не показуємо порожній абзац #}
+        {% if product.description %}
+        <p class="mt-6 text-lg leading-relaxed text-muted dark:text-muted-dark">{{ product.description }}</p>
+        {% endif %}
+
+        <ul class="mt-10 space-y-3 border-t border-line pt-8 dark:border-line-dark">
+            <li class="flex items-center gap-3"><i class="ph ph-seal-check text-xl text-gold dark:text-gold-bright" aria-hidden="true"></i>Офіційна гарантія від 12 місяців</li>
+            <li class="flex items-center gap-3"><i class="ph ph-truck text-xl text-gold dark:text-gold-bright" aria-hidden="true"></i>Доставка за 1-2 дні</li>
+            <li class="flex items-center gap-3"><i class="ph ph-arrows-counter-clockwise text-xl text-gold dark:text-gold-bright" aria-hidden="true"></i>14 днів на повернення</li>
+        </ul>
+    </div>
+</article>
+
+{% if similar %}
+<section class="mt-20 md:mt-28">
+    <h2 class="font-display text-4xl font-semibold tracking-tight">Схожі товари</h2>
+    <div class="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {% for product in similar %}
+        {% include "_product_card.html" %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}
