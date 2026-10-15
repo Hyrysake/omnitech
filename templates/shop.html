@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Каталог{% endblock %}
+
+{% block content %}
+<header class="max-w-3xl">
+    <h1 class="reveal font-display text-5xl font-semibold tracking-tight sm:text-6xl">Каталог</h1>
+    <p class="reveal mt-4 text-lg leading-relaxed text-muted dark:text-muted-dark" style="--i: 1">
+        Шукайте за назвою, обирайте категорію й діапазон ціни.
+    </p>
+</header>
+
+{# Форма пошуку надсилається методом GET: значення полів потрапляють в адресу (/shop?q=...&category=...).
+   Тому результат можна додати в закладки, а кнопка «Назад» у браузері працює як очікується.
+   Кожне поле показує вибране значення з filters, тож після пошуку форма не очищується #}
+<form method="get" action="{{ url_for('shop.catalog') }}" class="card reveal mt-10 grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 sm:p-6 lg:grid-cols-4" style="--i: 2">
+    <div class="sm:col-span-2 lg:col-span-4">
+        <label for="q" class="label">Пошук</label>
+        <input id="q" name="q" type="search" maxlength="100" value="{{ filters.q }}" placeholder="Наприклад: ноутбук, навушники" class="input">
+    </div>
+
+    <div>
+        <label for="category" class="label">Категорія</label>
+        <select id="category" name="category" class="input">
+            <option value="">Усі категорії</option>
+            {% for category in categories %}
+            <option value="{{ category.id }}"{% if filters.category == category.id %} selected{% endif %}>{{ category.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label for="min" class="label">Ціна від, грн</label>
+        <input id="min" name="min" type="number" min="0" inputmode="numeric" value="{{ filters.min if filters.min is not none }}" class="input">
+    </div>
+    <div>
+        <label for="max" class="label">Ціна до, грн</label>
+        <input id="max" name="max" type="number" min="0" inputmode="numeric" value="{{ filters.max if filters.max is not none }}" class="input">
+    </div>
+    <div>
+        <label for="sort" class="label">Сортування</label>
+        <select id="sort" name="sort" class="input">
+            {% for key, option in sort_options.items() %}
+            <option value="{{ key }}"{% if filters.sort == key %} selected{% endif %}>{{ option[0] }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3 sm:col-span-2 lg:col-span-4">
+        <button type="submit" class="btn btn-primary">
+            <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+            Знайти
+        </button>
+        {% if is_filtered %}
+        <a href="{{ url_for('shop.catalog') }}" class="btn btn-secondary">Скинути</a>
+        {% endif %}
+        <p class="text-sm text-muted dark:text-muted-dark" aria-live="polite">Знайдено товарів: <span class="font-semibold tabular-nums">{{ products|length }}</span></p>
+    </div>
+</form>
+
+{% if products %}
+<section class="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4" aria-label="Список товарів">
+    {% for product in products %}
+    {% include "_product_card.html" %}
+    {% endfor %}
+</section>
+{% else %}
+{# Порожній результат: пояснюємо, що сталося, і даємо вихід #}
+<section class="card mt-10 flex flex-col items-center px-6 py-16 text-center">
+    <span class="grid size-16 place-items-center rounded-full bg-gold/10 text-gold dark:bg-gold-bright/15 dark:text-gold-bright">
+        <i class="ph ph-magnifying-glass text-3xl" aria-hidden="true"></i>
+    </span>
+    {% if is_filtered %}
+    <h2 class="mt-6 font-display text-3xl font-semibold">За цим запитом нічого не знайдено</h2>
+    <p class="mt-3 max-w-md text-muted dark:text-muted-dark">Спробуйте змінити слова пошуку, розширити діапазон ціни або обрати іншу категорію.</p>
+    <a href="{{ url_for('shop.catalog') }}" class="btn btn-primary mt-8">Скинути фільтри</a>
+    {% else %}
+    <h2 class="mt-6 font-display text-3xl font-semibold">Каталог поки порожній</h2>
+    <p class="mt-3 max-w-md text-muted dark:text-muted-dark">Товари з'являться тут, щойно адміністратор додасть їх.</p>
+    {% endif %}
+</section>
+{% endif %}
+{% endblock %}
