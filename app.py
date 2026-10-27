@@ -27,6 +27,7 @@ from routes.admin_feedback import admin_feedback_bp
 from routes.admin_orders import admin_orders_bp
 from routes.cart import cart_bp, cart_item_count
 from routes.reviews import reviews_bp
+from routes.admin_reviews import admin_reviews_bp
 
 # Створюємо застосунок. Змінна __name__ підказує Flask, де лежить цей файл,
 # щоб він знайшов поруч теку templates/ з HTML-шаблонами.
@@ -57,6 +58,7 @@ app.register_blueprint(admin_feedback_bp)
 app.register_blueprint(admin_orders_bp)
 app.register_blueprint(cart_bp)
 app.register_blueprint(reviews_bp)
+app.register_blueprint(admin_reviews_bp)
 
 # Перед кожним запитом з'ясовуємо, хто зараз користується сайтом (результат лежить у g.user)
 app.before_request(load_logged_in_user)

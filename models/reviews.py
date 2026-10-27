@@ -75,3 +75,26 @@ def delete_user_review(product_id, user_id):
     db = get_db()
     db.execute('DELETE FROM reviews WHERE product_id = ? AND user_id = ?', (product_id, user_id))
     db.commit()
+
+
+def get_all_reviews():
+    """Усі відгуки з назвами товарів для адмін-панелі (JOIN з таблицею products)."""
+    db = get_db()
+    return db.execute(
+        'SELECT r.id, r.product_id, r.author_name, r.rating, r.text, r.created_at, p.name AS product_name '
+        'FROM reviews r JOIN products p ON p.id = r.product_id '
+        'ORDER BY r.id DESC'
+    ).fetchall()
+
+
+def delete_review(review_id):
+    """Видаляє будь-який відгук за номером (модерація адміністратором)."""
+    db = get_db()
+    db.execute('DELETE FROM reviews WHERE id = ?', (review_id,))
+    db.commit()
+
+
+def count_reviews():
+    """Кількість відгуків (для адмін-панелі)."""
+    db = get_db()
+    return db.execute('SELECT COUNT(*) FROM reviews').fetchone()[0]
