@@ -5,6 +5,7 @@ from flask import Blueprint, render_template, request
 from models.catalog_admin import count_categories, count_products
 from models.feedback import count_unread_feedback
 from models.orders import count_orders_by_status
+from models.reviews import count_reviews
 from models.users import count_users
 from security import require_admin
 
@@ -20,6 +21,7 @@ def dashboard():
         'products': count_products(),
         'categories': count_categories(),
         'users': count_users(),
+        'reviews': count_reviews(),
     }
     return render_template('admin/dashboard.html', stats=stats)
 

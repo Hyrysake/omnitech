@@ -2,6 +2,11 @@
 
 {% block title %}Товари{% endblock %}
 
+{# Заповнена зірка в колонці «На головній» потребує набору іконок ph-fill #}
+{% block head_extra %}
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.2/src/fill/style.css">
+{% endblock %}
+
 {% block admin_content %}
 <div class="flex flex-wrap items-center justify-between gap-4">
     <div>
@@ -41,7 +46,7 @@
                 <td class="whitespace-nowrap text-right font-semibold tabular-nums">{{ product.price|money }}</td>
                 <td class="hidden sm:table-cell">
                     {% if product.is_featured %}
-                    <i class="ph ph-star-fill text-lg text-gold dark:text-gold-bright" aria-hidden="true"></i>
+                    <i class="ph-fill ph-star text-lg text-gold dark:text-gold-bright" aria-hidden="true"></i>
                     <span class="sr-only">Так</span>
                     {% else %}
                     <span class="text-muted dark:text-muted-dark">—</span>

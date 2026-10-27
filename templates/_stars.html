@@ -1,0 +1,12 @@
+{# Зірки оцінки. Макрос stars(value) малює п'ять зірок: перші value заповнені золотом, решта бліді.
+   Дробове число (середня оцінка) округлюється до цілого. role="img" і aria-label дають екранній читалці
+   текст «Оцінка: 4 з 5». Заповнені зірки є лише в наборі іконок ph-fill, тому сторінка, що викликає
+   макрос, підключає його стилі в блоці head_extra #}
+{% macro stars(value, size='text-lg') %}
+    {% set filled = (value or 0)|round|int %}
+    <span class="inline-flex items-center gap-0.5 {{ size }} text-gold dark:text-gold-bright" role="img" aria-label="Оцінка: {{ filled }} з 5">
+        {% for n in range(1, 6) %}
+        <i class="{{ 'ph-fill' if n <= filled else 'ph' }} ph-star{% if n > filled %} opacity-40{% endif %}" aria-hidden="true"></i>
+        {% endfor %}
+    </span>
+{% endmacro %}

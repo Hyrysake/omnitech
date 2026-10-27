@@ -1,0 +1,57 @@
+{% extends "admin/layout.html" %}
+{% from "_stars.html" import stars %}
+
+{% block title %}Відгуки про товари{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.2/src/fill/style.css">
+{% endblock %}
+
+{% block admin_content %}
+<h1 class="font-display text-4xl font-semibold tracking-tight sm:text-5xl">Відгуки про товари</h1>
+<p class="mt-2 text-muted dark:text-muted-dark">Те, що покупці написали на сторінках товарів. Образливі чи недоречні відгуки можна видалити.</p>
+
+{% if items %}
+<div class="table-wrap mt-8">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th scope="col">Товар</th>
+                <th scope="col">Відгук</th>
+                <th scope="col"><span class="sr-only">Дії</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr class="align-top">
+                <td class="w-40 sm:w-56">
+                    <a href="{{ url_for('shop.product', product_id=item.product_id) }}#reviews" class="font-semibold underline-offset-4 hover:underline">{{ item.product_name }}</a>
+                </td>
+                <td>
+                    <p class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                        <span class="font-semibold">{{ item.author_name }}</span>
+                        {{ stars(item.rating, 'text-base') }}
+                        <span class="text-xs tabular-nums text-muted dark:text-muted-dark">{{ item.created_at[:10] }}</span>
+                    </p>
+                    <p class="mt-1 whitespace-pre-line break-words">{{ item.text }}</p>
+                </td>
+                <td>
+                    <form method="post" action="{{ url_for('admin_reviews.review_delete', review_id=item.id) }}"
+                          data-confirm="Видалити цей відгук?">
+                        <button type="submit" class="btn btn-danger px-3 sm:px-4" aria-label="Видалити відгук від {{ item.author_name }}">
+                            <i class="ph ph-trash" aria-hidden="true"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card mt-8 px-6 py-14 text-center">
+    <p class="font-display text-3xl font-semibold">Відгуків про товари ще немає</p>
+    <p class="mt-2 text-muted dark:text-muted-dark">Вони з'являться тут, коли покупці напишуть їх на сторінках товарів.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -114,6 +114,27 @@ ORDERS = [
      [('Ноутбук OmniBook Air 14', 1)]),
 ]
 
+# Демонстраційні відгуки про товари:
+# (назва товару, email акаунта або None, ім'я автора, оцінка 1-5, текст, коли написано).
+REVIEWS = [
+    ('Ноутбук OmniBook Air 14', None, 'Олена Ковальчук', 5,
+     'Легкий, тихий, батареї вистачає на цілий день пар. Для навчання саме те, що треба.', '2026-10-05 19:10:00'),
+    ('Ноутбук OmniBook Air 14', None, 'Тарас Білик', 4,
+     'Дуже зручний, але хотілося б більше портів. За свої гроші відмінний вибір.', '2026-10-09 08:45:00'),
+    ('Смартфон Nova X 128 ГБ', None, 'Ірина Мельник', 5,
+     'Камера приємно здивувала, особливо вночі. Працює швидко, не гріється.', '2026-10-07 14:20:00'),
+    ('Смартфон Nova X 128 ГБ', None, 'Богдан Нестерук', 4,
+     'Хороший телефон. Мінус один: зарядка в комплекті повільна.', '2026-10-11 21:05:00'),
+    ('Бездротовий геймпад Pulse', 'client@omnitech.example', 'Олена Коваль', 5,
+     'Зручно лежить у руках, без затримки по Bluetooth. Замовила ввечері, наступного дня вже грала.', '2026-10-10 12:00:00'),
+    ('Бездротова миша Glide', 'client@omnitech.example', 'Олена Коваль', 4,
+     'Тиха й точна. Приймач поміщається всередині корпусу, не загубиш.', '2026-10-10 12:05:00'),
+    ('Навушники Studio Over-ear', None, 'Максим Ткачук', 5,
+     'Шумозаглушення працює чудово, у метро й вдома. Подушечки не втомлюють вуха.', '2026-10-12 17:30:00'),
+    ('Фотокамера Retro M10', None, 'Остап Гнатюк', 3,
+     'Знімки добрі, але автофокус у темряві повільний. Для початківця підійде.', '2026-10-13 10:15:00'),
+]
+
 
 def _is_empty(db, table):
     """Повертає True, якщо в таблиці немає жодного рядка.
@@ -156,6 +177,9 @@ def seed_database(db):
     if _is_empty(db, 'orders'):
         _seed_orders(db)
 
+    if _is_empty(db, 'reviews'):
+        _seed_reviews(db)
+
 
 def _seed_orders(db):
     """Додає демонстраційні замовлення разом з їхніми рядками."""
@@ -174,3 +198,15 @@ def _seed_orders(db):
             [(order_id, products[product_name]['id'], quantity, products[product_name]['price'])
              for product_name, quantity in lines],
         )
+
+
+def _seed_reviews(db):
+    """Додає демонстраційні відгуки. Ті, що написав демо-клієнт, прив'язуються до його акаунта."""
+    product_ids = {row['name']: row['id'] for row in db.execute('SELECT id, name FROM products')}
+    user_ids = {row['email']: row['id'] for row in db.execute('SELECT id, email FROM users')}
+    db.executemany(
+        'INSERT INTO reviews (product_id, user_id, author_name, rating, text, created_at) '
+        'VALUES (?, ?, ?, ?, ?, ?)',
+        [(product_ids[product], user_ids.get(email), author, rating, text, created_at)
+         for product, email, author, rating, text, created_at in REVIEWS],
+    )
