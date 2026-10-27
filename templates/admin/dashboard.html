@@ -27,6 +27,7 @@
     {{ stat('Товарів у каталозі', stats.products, 'ph-package', url_for('admin_catalog.products')) }}
     {{ stat('Категорій', stats.categories, 'ph-tag', url_for('admin_catalog.categories')) }}
     {{ stat('Користувачів', stats.users, 'ph-users') }}
+    {{ stat('Нових відгуків', unread_feedback, 'ph-chat-circle-text', url_for('admin_feedback.feedback_list'), unread_feedback > 0) }}
 </div>
 
 <div class="reveal mt-10 flex flex-wrap gap-3" style="--i: 3">

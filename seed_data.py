@@ -87,6 +87,16 @@ USERS = [
     ('Олена Коваль', 'client@omnitech.example', 'client123', 'client'),
 ]
 
+# Відгуки з форми «Контакти»: (ім'я, email, текст, прочитано, коли надіслано).
+FEEDBACK = [
+    ('Максим Ткачук', 'maksym@example.com',
+     'Дякую за швидку доставку! Геймпад приїхав наступного дня, упаковка ціла.', 1, '2026-10-09 18:20:00'),
+    ('Ірина Мельник', 'iryna@example.com',
+     'Чи можна відкласти ноутбук на два дні? Хочу показати його чоловікові перед покупкою.', 0, '2026-10-12 11:05:00'),
+    ('Остап Гнатюк', 'ostap@example.com',
+     'На сторінці камери немає розміру матриці. Додайте, будь ласка, повні характеристики.', 0, '2026-10-13 09:40:00'),
+]
+
 
 def _is_empty(db, table):
     """Повертає True, якщо в таблиці немає жодного рядка.
@@ -118,4 +128,10 @@ def seed_database(db):
             'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)',
             # generate_password_hash перетворює пароль на «хеш»: за ним пароль не відновити
             [(name, email, generate_password_hash(password), role) for name, email, password, role in USERS],
+        )
+
+    if _is_empty(db, 'feedback'):
+        db.executemany(
+            'INSERT INTO feedback (name, email, message, is_read, created_at) VALUES (?, ?, ?, ?, ?)',
+            FEEDBACK,
         )

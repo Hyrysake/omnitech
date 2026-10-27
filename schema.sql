@@ -34,3 +34,13 @@ CREATE TABLE IF NOT EXISTS users (
     role          TEXT NOT NULL DEFAULT 'client' CHECK (role IN ('admin', 'client')),
     created_at    TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 );
+
+-- Відгуки з форми на сторінці «Контакти».
+CREATE TABLE IF NOT EXISTS feedback (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    name       TEXT    NOT NULL,
+    email      TEXT    NOT NULL,
+    message    TEXT    NOT NULL,
+    is_read    INTEGER NOT NULL DEFAULT 0 CHECK (is_read IN (0, 1)),   -- 0 = нове, 1 = прочитане
+    created_at TEXT    NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
