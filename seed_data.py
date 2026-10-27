@@ -97,6 +97,23 @@ FEEDBACK = [
      'На сторінці камери немає розміру матриці. Додайте, будь ласка, повні характеристики.', 0, '2026-10-13 09:40:00'),
 ]
 
+# Демонстраційні замовлення, щоб адмін-панель одразу була не порожньою.
+# (email акаунта або None для гостя, ім'я, телефон, email, адреса, статус, дата, [(товар, кількість), ...])
+ORDERS = [
+    ('client@omnitech.example', 'Олена Коваль', '+380501112233', 'client@omnitech.example',
+     'м. Луцьк, вул. Лесі Українки, 12, кв. 5', 'completed', '2026-10-08 12:30:00',
+     [('Бездротовий геймпад Pulse', 1), ('Бездротова миша Glide', 2)]),
+    (None, 'Петро Савчук', '+380672223344', 'petro@example.com',
+     'м. Рівне, відділення Нової пошти №3', 'shipped', '2026-10-11 16:45:00',
+     [('Смартфон Nova X 128 ГБ', 1)]),
+    ('client@omnitech.example', 'Олена Коваль', '+380501112233', 'client@omnitech.example',
+     'м. Луцьк, вул. Лесі Українки, 12, кв. 5', 'processing', '2026-10-13 10:15:00',
+     [('Навушники Studio Over-ear', 1), ('Монітор Vista 27"', 1)]),
+    (None, 'Марія Бондар', '+380933334455', 'maria@example.com',
+     'м. Ковель, вул. Незалежності, 7', 'new', '2026-10-14 20:05:00',
+     [('Ноутбук OmniBook Air 14', 1)]),
+]
+
 
 def _is_empty(db, table):
     """Повертає True, якщо в таблиці немає жодного рядка.
@@ -134,4 +151,26 @@ def seed_database(db):
         db.executemany(
             'INSERT INTO feedback (name, email, message, is_read, created_at) VALUES (?, ?, ?, ?, ?)',
             FEEDBACK,
+        )
+
+    if _is_empty(db, 'orders'):
+        _seed_orders(db)
+
+
+def _seed_orders(db):
+    """Додає демонстраційні замовлення разом з їхніми рядками."""
+    products = {row['name']: row for row in db.execute('SELECT id, name, price FROM products')}
+    user_ids = {row['email']: row['id'] for row in db.execute('SELECT id, email FROM users')}
+    for user_email, name, phone, email, address, status, created_at, lines in ORDERS:
+        total = sum(products[product_name]['price'] * quantity for product_name, quantity in lines)
+        cursor = db.execute(
+            'INSERT INTO orders (user_id, customer_name, phone, email, address, total, status, created_at) '
+            'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            (user_ids.get(user_email), name, phone, email, address, total, status, created_at),
+        )
+        order_id = cursor.lastrowid          # номер щойно створеного замовлення
+        db.executemany(
+            'INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)',
+            [(order_id, products[product_name]['id'], quantity, products[product_name]['price'])
+             for product_name, quantity in lines],
         )

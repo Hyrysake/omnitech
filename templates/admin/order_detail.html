@@ -1,0 +1,83 @@
+{% extends "admin/layout.html" %}
+{% from "admin/_status_badge.html" import status_badge %}
+
+{% block title %}Замовлення №{{ order.id }}{% endblock %}
+
+{% block admin_content %}
+<a href="{{ url_for('admin_orders.orders') }}" class="inline-flex min-h-11 items-center gap-2 text-sm text-muted underline-offset-4 hover:underline dark:text-muted-dark">
+    <i class="ph ph-arrow-left" aria-hidden="true"></i>
+    Усі замовлення
+</a>
+
+<div class="mt-2 flex flex-wrap items-center gap-4">
+    <h1 class="font-display text-4xl font-semibold tracking-tight sm:text-5xl">Замовлення №{{ order.id }}</h1>
+    {{ status_badge(order.status, statuses[order.status]) }}
+</div>
+<p class="mt-2 tabular-nums text-muted dark:text-muted-dark">Оформлено {{ order.created_at[:16] }}</p>
+
+<div class="mt-8 grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
+    {# Склад замовлення. Ціна береться з order_items: це ціна на момент покупки #}
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th scope="col">Товар</th>
+                    <th scope="col" class="text-right">Ціна</th>
+                    <th scope="col" class="text-right">К-сть</th>
+                    <th scope="col" class="text-right">Разом</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td class="font-semibold">{{ item.name }}</td>
+                    <td class="text-right tabular-nums">{{ item.price|money }}</td>
+                    <td class="text-right tabular-nums">{{ item.quantity }}</td>
+                    <td class="text-right font-semibold tabular-nums">{{ item.line_total|money }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="border-t border-line dark:border-line-dark">
+                    <td colspan="3" class="px-4 py-3 text-right font-semibold">До сплати, грн</td>
+                    <td class="px-4 py-3 text-right text-lg font-semibold tabular-nums">{{ order.total|money }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="space-y-6">
+        <div class="card p-6">
+            <h2 class="text-lg font-semibold">Покупець</h2>
+            <dl class="mt-4 space-y-3 text-sm">
+                <div><dt class="text-muted dark:text-muted-dark">Ім'я</dt><dd class="font-medium">{{ order.customer_name }}</dd></div>
+                <div><dt class="text-muted dark:text-muted-dark">Телефон</dt><dd class="font-medium"><a href="tel:{{ order.phone }}" class="underline-offset-4 hover:underline">{{ order.phone }}</a></dd></div>
+                <div><dt class="text-muted dark:text-muted-dark">Пошта</dt><dd class="break-all font-medium"><a href="mailto:{{ order.email }}" class="underline-offset-4 hover:underline">{{ order.email }}</a></dd></div>
+                <div><dt class="text-muted dark:text-muted-dark">Адреса доставки</dt><dd class="font-medium">{{ order.address }}</dd></div>
+                <div><dt class="text-muted dark:text-muted-dark">Акаунт</dt><dd class="font-medium">{{ order.account_email or 'Гість (без акаунта)' }}</dd></div>
+            </dl>
+        </div>
+
+        <form method="post" action="{{ url_for('admin_orders.order_status', order_id=order.id) }}" class="card space-y-4 p-6">
+            <h2 class="text-lg font-semibold">Статус</h2>
+            <div>
+                <label for="status" class="label">Змінити на</label>
+                <select id="status" name="status" class="input">
+                    {% for key, label in statuses.items() %}
+                    <option value="{{ key }}"{% if order.status == key %} selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary w-full">Зберегти статус</button>
+        </form>
+
+        <form method="post" action="{{ url_for('admin_orders.order_delete', order_id=order.id) }}"
+              data-confirm="Видалити замовлення №{{ order.id }} разом з усіма його рядками?">
+            <button type="submit" class="btn btn-danger w-full">
+                <i class="ph ph-trash" aria-hidden="true"></i>
+                Видалити замовлення
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

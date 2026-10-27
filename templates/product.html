@@ -36,6 +36,19 @@
         <p class="mt-6 text-lg leading-relaxed text-muted dark:text-muted-dark">{{ product.description }}</p>
         {% endif %}
 
+        {# Кількість і кнопка. Ціни тут немає: сервер візьме її з бази, а не з форми #}
+        <form method="post" action="{{ url_for('cart.add', product_id=product.id) }}" class="mt-8 flex flex-wrap items-end gap-3">
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <div>
+                <label for="quantity" class="label">Кількість</label>
+                <input id="quantity" name="quantity" type="number" min="1" max="99" value="1" inputmode="numeric" class="input w-24">
+            </div>
+            <button type="submit" class="btn btn-primary px-8">
+                <i class="ph ph-shopping-cart-simple text-lg" aria-hidden="true"></i>
+                Додати в кошик
+            </button>
+        </form>
+
         <ul class="mt-10 space-y-3 border-t border-line pt-8 dark:border-line-dark">
             <li class="flex items-center gap-3"><i class="ph ph-seal-check text-xl text-gold dark:text-gold-bright" aria-hidden="true"></i>Офіційна гарантія від 12 місяців</li>
             <li class="flex items-center gap-3"><i class="ph ph-truck text-xl text-gold dark:text-gold-bright" aria-hidden="true"></i>Доставка за 1-2 дні</li>

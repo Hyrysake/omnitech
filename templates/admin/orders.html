@@ -1,0 +1,63 @@
+{% extends "admin/layout.html" %}
+{% from "admin/_status_badge.html" import status_badge %}
+
+{% block title %}Замовлення{% endblock %}
+
+{% block admin_content %}
+<h1 class="font-display text-4xl font-semibold tracking-tight sm:text-5xl">Замовлення</h1>
+
+{# Фільтр за статусом: звичайні посилання з параметром ?status=... Поточний варіант підсвічено #}
+<nav aria-label="Фільтр за статусом" class="mt-6 flex flex-wrap gap-2">
+    <a href="{{ url_for('admin_orders.orders') }}"{% if not current_status %} aria-current="page"{% endif %}
+       class="btn {% if not current_status %}btn-primary{% else %}btn-secondary{% endif %} px-4">Усі</a>
+    {% for key, label in statuses.items() %}
+    <a href="{{ url_for('admin_orders.orders', status=key) }}"{% if current_status == key %} aria-current="page"{% endif %}
+       class="btn {% if current_status == key %}btn-primary{% else %}btn-secondary{% endif %} px-4">{{ label }}</a>
+    {% endfor %}
+</nav>
+
+{% if orders %}
+<div class="table-wrap mt-6">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th scope="col">№</th>
+                <th scope="col" class="hidden sm:table-cell">Дата</th>
+                <th scope="col">Покупець</th>
+                <th scope="col" class="hidden md:table-cell text-right">Штук</th>
+                <th scope="col" class="text-right">Сума, грн</th>
+                <th scope="col">Статус</th>
+                <th scope="col" class="hidden sm:table-cell"><span class="sr-only">Дії</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td class="font-semibold tabular-nums">{{ order.id }}</td>
+                <td class="hidden whitespace-nowrap tabular-nums sm:table-cell">{{ order.created_at[:16] }}</td>
+                <td>
+                    {# На телефоні кнопки «Відкрити» немає, тому відкрити замовлення можна по імені покупця #}
+                    <p class="font-semibold"><a href="{{ url_for('admin_orders.order_detail', order_id=order.id) }}" class="underline-offset-4 hover:underline">{{ order.customer_name }}</a></p>
+                    <p class="hidden text-xs text-muted sm:block dark:text-muted-dark">{{ order.phone }}</p>
+                </td>
+                <td class="hidden text-right tabular-nums md:table-cell">{{ order.units }}</td>
+                <td class="whitespace-nowrap text-right font-semibold tabular-nums">{{ order.total|money }}</td>
+                <td>{{ status_badge(order.status, statuses[order.status]) }}</td>
+                <td class="hidden text-right sm:table-cell">
+                    <a href="{{ url_for('admin_orders.order_detail', order_id=order.id) }}" class="btn btn-secondary px-3 sm:px-4" aria-label="Відкрити замовлення №{{ order.id }}">
+                        <i class="ph ph-arrow-right sm:hidden" aria-hidden="true"></i>
+                        <span class="hidden sm:inline">Відкрити</span>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card mt-6 px-6 py-14 text-center">
+    <p class="font-display text-3xl font-semibold">Замовлень немає</p>
+    <p class="mt-2 text-muted dark:text-muted-dark">{% if current_status %}З таким статусом замовлень поки немає.{% else %}Замовлення з'являться тут після першої покупки.{% endif %}</p>
+</div>
+{% endif %}
+{% endblock %}
