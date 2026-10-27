@@ -73,3 +73,21 @@ CREATE TABLE IF NOT EXISTS order_items (
 );
 
 CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items (order_id);
+
+-- Відгуки покупців про товари.
+-- CASCADE: коли товар видаляють, його відгуки зникають разом із ним.
+-- SET NULL: коли видаляють акаунт, відгук лишається, а author_name зберігає ім'я автора.
+-- UNIQUE (product_id, user_id): один користувач залишає про товар один відгук.
+-- Для відгуків без акаунта (демонстраційних) user_id порожній, а порожні значення UNIQUE не порівнює.
+CREATE TABLE IF NOT EXISTS reviews (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_id  INTEGER NOT NULL REFERENCES products (id) ON DELETE CASCADE,
+    user_id     INTEGER REFERENCES users (id) ON DELETE SET NULL,
+    author_name TEXT    NOT NULL,
+    rating      INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    text        TEXT    NOT NULL,
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now', 'localtime')),
+    UNIQUE (product_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_reviews_product ON reviews (product_id);
