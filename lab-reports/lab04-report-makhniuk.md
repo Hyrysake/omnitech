@@ -100,23 +100,23 @@ erDiagram
 
 Форма відгуку на сторінці «Контакти»:
 
-![Форма відгуку](screenshots/lab04-makhniuk-feedback-form.png)
+![Форма відгуку](screenshots/lab04-makhniuk-feedback-form.jpg)
 
 Адмін-панель, відгуки (непрочитані з позначкою «Нове»):
 
-![Адмін-панель — відгуки](screenshots/lab04-makhniuk-admin-feedback.png)
+![Адмін-панель — відгуки](screenshots/lab04-makhniuk-admin-feedback.jpg)
 
 Кошик:
 
-![Кошик](screenshots/lab04-makhniuk-cart.png)
+![Кошик](screenshots/lab04-makhniuk-cart.jpg)
 
 Адмін-панель, список замовлень зі статусами та фільтром:
 
-![Адмін-панель — замовлення](screenshots/lab04-makhniuk-admin-orders.png)
+![Адмін-панель — замовлення](screenshots/lab04-makhniuk-admin-orders.jpg)
 
 Одне замовлення: склад, дані покупця, зміна статусу:
 
-![Замовлення](screenshots/lab04-makhniuk-admin-order.png)
+![Замовлення](screenshots/lab04-makhniuk-admin-order.jpg)
 
 ## Труднощі та їх вирішення
 
