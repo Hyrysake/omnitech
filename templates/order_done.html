@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Замовлення оформлено{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-2xl text-center">
+    <span class="reveal mx-auto grid size-20 place-items-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+        <i class="ph ph-check-circle text-5xl" aria-hidden="true"></i>
+    </span>
+    <h1 class="reveal mt-6 font-display text-5xl font-semibold tracking-tight sm:text-6xl" style="--i: 1">Дякуємо за замовлення!</h1>
+    <p class="reveal mt-4 text-lg leading-relaxed text-muted dark:text-muted-dark" style="--i: 2">
+        Замовлення №{{ order.id }} прийнято. Ми зателефонуємо за номером {{ order.phone }}, щоб підтвердити доставку на адресу: {{ order.address }}.
+    </p>
+</section>
+
+<section class="card reveal mx-auto mt-10 max-w-2xl p-6 sm:p-8" style="--i: 3">
+    <h2 class="text-lg font-semibold">Склад замовлення №{{ order.id }}</h2>
+    <ul class="mt-4 divide-y divide-line dark:divide-line-dark">
+        {% for item in items %}
+        <li class="flex justify-between gap-4 py-3">
+            <span class="min-w-0">{{ item.name }} <span class="text-muted dark:text-muted-dark">× {{ item.quantity }}</span></span>
+            <span class="shrink-0 font-semibold tabular-nums">{{ item.line_total|money }} грн</span>
+        </li>
+        {% endfor %}
+    </ul>
+    <p class="mt-4 flex items-baseline justify-between border-t border-line pt-4 dark:border-line-dark">
+        <span class="font-semibold">Разом</span>
+        <span class="font-display text-3xl font-semibold lining-nums tabular-nums">{{ order.total|money }} грн</span>
+    </p>
+</section>
+
+<div class="mt-10 flex flex-wrap justify-center gap-3">
+    <a href="{{ url_for('shop.catalog') }}" class="btn btn-primary">Продовжити покупки</a>
+    <a href="{{ url_for('home') }}" class="btn btn-secondary">На головну</a>
+</div>
+{% endblock %}

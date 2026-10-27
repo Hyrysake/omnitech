@@ -1,8 +1,10 @@
 """Адмін-панель: головна сторінка зі статистикою. Розділи зі списками лежать у сусідніх модулях."""
 
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request
 
 from models.catalog_admin import count_categories, count_products
+from models.feedback import count_unread_feedback
+from models.orders import count_orders_by_status
 from models.users import count_users
 from security import require_admin
 
@@ -20,3 +22,15 @@ def dashboard():
         'users': count_users(),
     }
     return render_template('admin/dashboard.html', stats=stats)
+
+
+@admin_bp.app_context_processor
+def inject_admin_counters():
+    """Числа для значків у бічному меню адмінки. Рахуються лише на сторінках адмінки,
+    а решта сайту ці запити не виконує."""
+    if not (request.blueprint or '').startswith('admin'):
+        return {}
+    return {
+        'unread_feedback': count_unread_feedback(),
+        'new_orders': count_orders_by_status('new'),
+    }

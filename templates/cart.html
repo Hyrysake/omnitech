@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Кошик{% endblock %}
+
+{% block content %}
+<h1 class="reveal font-display text-5xl font-semibold tracking-tight sm:text-6xl">Кошик</h1>
+
+{% if lines %}
+<div class="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
+    <ul class="space-y-4">
+        {% for line in lines %}
+        {# Сітка з двох колонок: фото й дані товару. Керування кількістю під ними: на телефоні на всю ширину картки,
+           від sm — під даними товару (праворуч від фото) #}
+        <li class="card grid grid-cols-[6rem_minmax(0,1fr)] gap-x-4 gap-y-4 p-4 sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-x-6 sm:p-5">
+            <a href="{{ url_for('shop.product', product_id=line.product.id) }}" class="sm:row-span-2">
+                <img src="{{ line.product.image }}" alt="" width="160" height="120" loading="lazy"
+                     class="aspect-[4/3] w-full rounded-xl object-cover">
+            </a>
+            <div class="min-w-0">
+                <p class="text-xs font-semibold uppercase tracking-wider text-gold dark:text-gold-bright">{{ line.product.category }}</p>
+                <a href="{{ url_for('shop.product', product_id=line.product.id) }}" class="mt-1 block font-semibold underline-offset-4 hover:underline">{{ line.product.name }}</a>
+                <p class="mt-1 text-sm tabular-nums text-muted dark:text-muted-dark">{{ line.product.price|money }} грн за штуку</p>
+            </div>
+            <div class="col-span-2 flex flex-wrap items-end justify-between gap-3 sm:col-span-1 sm:col-start-2 sm:self-end">
+                <div class="flex items-end gap-2">
+                    {# Кількість змінюється окремою формою POST; значення 0 прибирає товар з кошика #}
+                    <form method="post" action="{{ url_for('cart.update', product_id=line.product.id) }}" class="flex items-end gap-2">
+                        <div>
+                            <label for="qty-{{ line.product.id }}" class="sr-only">Кількість: {{ line.product.name }}</label>
+                            <input id="qty-{{ line.product.id }}" name="quantity" type="number" min="0" max="99" value="{{ line.quantity }}" inputmode="numeric" class="input w-20">
+                        </div>
+                        <button type="submit" class="btn btn-secondary px-4">Оновити</button>
+                    </form>
+                    <form method="post" action="{{ url_for('cart.remove', product_id=line.product.id) }}">
+                        <button type="submit" class="btn btn-danger px-4" aria-label="Прибрати з кошика: {{ line.product.name }}">
+                            <i class="ph ph-trash" aria-hidden="true"></i>
+                        </button>
+                    </form>
+                </div>
+                <p class="text-xl font-semibold tabular-nums">{{ line.line_total|money }} грн</p>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <aside class="card h-fit p-6 lg:sticky lg:top-28">
+        <h2 class="text-lg font-semibold">Разом</h2>
+        <p class="mt-4 font-display text-5xl font-semibold lining-nums tabular-nums">{{ total|money }} <span class="text-2xl">грн</span></p>
+        <p class="mt-2 text-sm text-muted dark:text-muted-dark">Вартість доставки узгодимо під час підтвердження замовлення.</p>
+        <a href="{{ url_for('cart.checkout') }}" class="btn btn-primary mt-6 w-full">Оформити замовлення</a>
+        <a href="{{ url_for('shop.catalog') }}" class="btn btn-secondary mt-3 w-full">Продовжити покупки</a>
+    </aside>
+</div>
+{% else %}
+<section class="card mt-10 flex flex-col items-center px-6 py-16 text-center">
+    <span class="grid size-16 place-items-center rounded-full bg-gold/10 text-gold dark:bg-gold-bright/15 dark:text-gold-bright">
+        <i class="ph ph-shopping-cart text-3xl" aria-hidden="true"></i>
+    </span>
+    <h2 class="mt-6 font-display text-3xl font-semibold">У кошику порожньо</h2>
+    <p class="mt-3 max-w-md text-muted dark:text-muted-dark">Оберіть товари в каталозі, і вони з'являться тут.</p>
+    <a href="{{ url_for('shop.catalog') }}" class="btn btn-primary mt-8">Перейти до каталогу</a>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Оформлення замовлення{% endblock %}
+
+{% block content %}
+<h1 class="reveal font-display text-5xl font-semibold tracking-tight sm:text-6xl">Оформлення замовлення</h1>
+{% if not g.user %}
+<p class="reveal mt-4 text-lg text-muted dark:text-muted-dark" style="--i: 1">
+    Акаунт не потрібен. Якщо він у вас є,
+    <a href="{{ url_for('auth.login', next=url_for('cart.checkout')) }}" class="font-semibold text-gold underline-offset-4 hover:underline dark:text-gold-bright">увійдіть</a>,
+    і ми підставимо ваші дані.
+</p>
+{% endif %}
+
+<div class="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
+    {# Ціни й суму в замовлення формує сервер за даними бази. У формі є лише контакти покупця #}
+    <form method="post" action="{{ url_for('cart.checkout') }}" class="card space-y-5 p-6 sm:p-8">
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+                <label for="name" class="label">Ім'я та прізвище</label>
+                <input id="name" name="name" type="text" value="{{ form.name }}" required minlength="2" maxlength="80" autocomplete="name" class="input">
+            </div>
+            <div>
+                <label for="phone" class="label">Телефон</label>
+                <input id="phone" name="phone" type="tel" value="{{ form.phone }}" required placeholder="+380501234567" autocomplete="tel" class="input">
+            </div>
+        </div>
+        <div>
+            <label for="email" class="label">Пошта</label>
+            <input id="email" name="email" type="email" value="{{ form.email }}" required autocomplete="email" class="input">
+        </div>
+        <div>
+            <label for="address" class="label">Адреса доставки</label>
+            <textarea id="address" name="address" rows="3" required minlength="5" maxlength="300" placeholder="Місто, вулиця, будинок, або відділення Нової пошти" autocomplete="street-address" class="input">{{ form.address }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary w-full sm:w-auto sm:px-10">Підтвердити замовлення</button>
+    </form>
+
+    <aside class="card h-fit p-6">
+        <h2 class="text-lg font-semibold">Ваше замовлення</h2>
+        <ul class="mt-4 divide-y divide-line dark:divide-line-dark">
+            {% for line in lines %}
+            <li class="flex justify-between gap-4 py-3 text-sm">
+                <span class="min-w-0">{{ line.product.name }} <span class="text-muted dark:text-muted-dark">× {{ line.quantity }}</span></span>
+                <span class="shrink-0 font-semibold tabular-nums">{{ line.line_total|money }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        <p class="mt-4 flex items-baseline justify-between border-t border-line pt-4 dark:border-line-dark">
+            <span class="font-semibold">Разом, грн</span>
+            <span class="font-display text-3xl font-semibold lining-nums tabular-nums">{{ total|money }}</span>
+        </p>
+        <a href="{{ url_for('cart.view') }}" class="mt-4 inline-flex min-h-11 items-center text-sm text-muted underline-offset-4 hover:underline dark:text-muted-dark">Повернутися до кошика</a>
+    </aside>
+</div>
+{% endblock %}

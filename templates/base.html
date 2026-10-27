@@ -254,6 +254,15 @@
                         {{ account_links() }}
                     </div>
 
+                    <!-- Кошик: видно на будь-якій ширині. Число біля іконки — скільки штук лежить у кошику -->
+                    <a href="{{ url_for('cart.view') }}" aria-label="Кошик{% if cart_count %}: {{ cart_count }} шт.{% endif %}"
+                       class="relative grid size-11 place-items-center rounded-xl text-graphite transition-colors duration-200 hover:bg-coal/5 dark:text-stone-300 dark:hover:bg-white/10">
+                        <i class="ph ph-shopping-cart text-xl" aria-hidden="true"></i>
+                        {% if cart_count %}
+                        <span class="absolute right-0 top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-semibold leading-none text-white tabular-nums dark:bg-gold-bright dark:text-ink">{{ cart_count }}</span>
+                        {% endif %}
+                    </a>
+
                     <!-- Перемикач теми. Яку іконку показати, вирішує CSS:
                          місяць видно у світлій темі (dark:hidden), сонце — у темній (hidden dark:inline-block).
                          aria-pressed повідомляє екранній читалці, чи темна тема зараз увімкнена -->

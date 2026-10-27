@@ -13,14 +13,19 @@ OmniTech — інтернет-магазин електроніки (навча�
 import os
 
 from flask import Flask, render_template
+from flask import flash, g, redirect, request, url_for
 
 import db
 from models.catalog import get_featured_products
+from models.feedback import add_feedback, validate_feedback
 from routes.shop import shop_bp
 from routes.auth import auth_bp
 from security import load_logged_in_user
 from routes.admin import admin_bp
 from routes.admin_catalog import admin_catalog_bp
+from routes.admin_feedback import admin_feedback_bp
+from routes.admin_orders import admin_orders_bp
+from routes.cart import cart_bp, cart_item_count
 
 # Створюємо застосунок. Змінна __name__ підказує Flask, де лежить цей файл,
 # щоб він знайшов поруч теку templates/ з HTML-шаблонами.
@@ -47,9 +52,18 @@ app.register_blueprint(shop_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(admin_catalog_bp)
+app.register_blueprint(admin_feedback_bp)
+app.register_blueprint(admin_orders_bp)
+app.register_blueprint(cart_bp)
 
 # Перед кожним запитом з'ясовуємо, хто зараз користується сайтом (результат лежить у g.user)
 app.before_request(load_logged_in_user)
+
+
+@app.context_processor
+def inject_cart_count():
+    """Робить змінну cart_count доступною в усіх шаблонах (число біля іконки кошика в шапці)."""
+    return {'cart_count': cart_item_count()}
 
 
 @app.template_filter('money')
@@ -98,10 +112,30 @@ CONTACTS = {
 }
 
 
-@app.route('/contacts')
+@app.route('/contacts', methods=['GET', 'POST'])
 def contacts():
-    """Сторінка «Контакти»: адреса, телефон, email, графік роботи і карта."""
-    return render_template('contacts.html', contacts=CONTACTS)
+    """Сторінка «Контакти»: адреса, телефон, email, графік роботи, карта і форма відгуку.
+
+    GET показує сторінку. POST приймає форму: якщо все гаразд, зберігає відгук у базу
+    і перенаправляє назад (патерн PRG: Post -> Redirect -> Get), щоб оновлення сторінки
+    не відправило ту саму форму вдруге.
+    """
+    form = {'name': '', 'email': '', 'message': ''}
+    errors = []
+    if request.method == 'POST':
+        for field in form:
+            form[field] = request.form.get(field, '').strip()
+        errors = validate_feedback(form['name'], form['email'], form['message'])
+        if not errors:
+            add_feedback(form['name'], form['email'], form['message'])
+            flash('Дякуємо! Ваше повідомлення отримано, ми відповімо протягом робочого дня.', 'success')
+            return redirect(url_for('contacts'))
+    elif g.user:
+        # Залогінений користувач не вводить ім'я та пошту вдруге
+        form['name'] = g.user['name']
+        form['email'] = g.user['email']
+    # Помилки показуємо просто над формою (errors), а не вгорі сторінки, щоб їх було видно одразу
+    return render_template('contacts.html', contacts=CONTACTS, form=form, errors=errors)
 
 
 # ==================== Сторінка «Часті питання» (FAQ) ====================

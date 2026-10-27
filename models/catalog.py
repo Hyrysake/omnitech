@@ -83,3 +83,19 @@ def search_products(query='', category_id=None, min_price=None, max_price=None, 
         f'{where} ORDER BY {order_by}',
         params,
     ).fetchall()
+
+
+def get_products_by_ids(product_ids):
+    """Товари з переданого списку номерів (потрібно кошику)."""
+    if not product_ids:
+        return []
+    db = get_db()
+    # Рядок «?, ?, ?» будуємо за кількістю номерів. У запит потрапляють лише знаки питання,
+    # а самі номери йдуть окремо, тож це безпечно
+    placeholders = ', '.join('?' * len(product_ids))
+    return db.execute(
+        'SELECT p.id, p.name, p.price, p.image, c.name AS category '
+        'FROM products p JOIN categories c ON c.id = p.category_id '
+        f'WHERE p.id IN ({placeholders})',
+        list(product_ids),
+    ).fetchall()

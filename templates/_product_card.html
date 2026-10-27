@@ -18,5 +18,13 @@
     <div class="mt-auto flex items-center justify-between gap-3 px-5 pb-5">
         {# tabular-nums: усі цифри однакової ширини, ціни в сусідніх картках рівні #}
         <p class="text-xl font-semibold tabular-nums">{{ product.price|money }} грн</p>
+        {# Кнопка «У кошик» — окрема форма POST. Поле next запам'ятовує поточну сторінку
+           (разом із вибраними фільтрами), щоб після додавання повернутися на неї #}
+        <form method="post" action="{{ url_for('cart.add', product_id=product.id) }}">
+            <input type="hidden" name="next" value="{{ request.full_path }}">
+            <button type="submit" class="btn btn-primary w-11 px-0" aria-label="Додати в кошик: {{ product.name }}">
+                <i class="ph ph-shopping-cart-simple text-lg" aria-hidden="true"></i>
+            </button>
+        </form>
     </div>
 </article>
