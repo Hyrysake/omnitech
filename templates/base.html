@@ -175,6 +175,25 @@
     </a>
 {% endmacro %}
 
+{# Блок акаунта в меню. Гість бачить «Увійти» та «Реєстрація». Залогінений користувач бачить своє ім'я
+   і кнопку «Вийти», а адміністратор ще й пункт «Адмін-панель». g.user заповнює функція load_logged_in_user.
+   Вихід — це форма з методом POST: посилання (GET) не повинно змінювати стан сайту #}
+{% macro account_links(mobile=False) %}
+    {% set item = 'block w-full rounded-xl px-4 py-3 text-left text-base' if mobile else 'rounded-full px-4 py-2 text-sm' %}
+    {% if g.user %}
+        <span class="{% if mobile %}flex px-4 py-2{% else %}flex px-2{% endif %} items-center gap-2 text-sm text-muted dark:text-muted-dark">
+            <i class="ph ph-user-circle text-xl" aria-hidden="true"></i>
+            <span class="max-w-[9rem] truncate">{{ g.user.name }}</span>
+        </span>
+        <form method="post" action="{{ url_for('auth.logout') }}">
+            <button type="submit" class="{{ item }} cursor-pointer font-medium text-graphite transition-colors duration-200 hover:bg-coal/5 dark:text-stone-300 dark:hover:bg-white/10">Вийти</button>
+        </form>
+    {% else %}
+        <a href="{{ url_for('auth.login') }}" class="{{ item }} font-medium text-graphite transition-colors duration-200 hover:bg-coal/5 dark:text-stone-300 dark:hover:bg-white/10">Увійти</a>
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary {% if mobile %}mt-1 w-full{% endif %}">Реєстрація</a>
+    {% endif %}
+{% endmacro %}
+
 <!-- flex flex-col + min-h-dvh + flex-grow у main: футер завжди внизу, навіть на короткій сторінці -->
 <body class="flex min-h-dvh flex-col bg-paper font-sans text-ink antialiased dark:bg-ink dark:text-paper">
     <!-- Посилання для тих, хто ходить по сайту клавішею Tab: видно лише у фокусі,
@@ -208,6 +227,11 @@
                         {{ nav_link('faq', 'Часті питання') }}
                     </div>
 
+                    <!-- Акаунт: окремий блок праворуч від посилань, відділений тонкою лінією -->
+                    <div class="ml-2 hidden items-center gap-1 border-l border-line pl-3 xl:flex dark:border-line-dark">
+                        {{ account_links() }}
+                    </div>
+
                     <!-- Перемикач теми. Яку іконку показати, вирішує CSS:
                          місяць видно у світлій темі (dark:hidden), сонце — у темній (hidden dark:inline-block).
                          aria-pressed повідомляє екранній читалці, чи темна тема зараз увімкнена -->
@@ -237,6 +261,9 @@
                 {{ nav_link('about', 'Про нас', mobile=True) }}
                 {{ nav_link('contacts', 'Контакти', mobile=True) }}
                 {{ nav_link('faq', 'Часті питання', mobile=True) }}
+                <div class="mt-2 space-y-1 border-t border-line pt-2 dark:border-line-dark">
+                    {{ account_links(mobile=True) }}
+                </div>
             </div>
         </nav>
     </header>
@@ -244,6 +271,21 @@
     <!-- Сюди кожна сторінка вставляє свій вміст (блок content).
          id="main" — ціль посилання «Перейти до вмісту»; max-w-7xl обмежує ширину на великих моніторах -->
     <main id="main" tabindex="-1" class="mx-auto w-full max-w-7xl flex-grow px-4 pb-20 pt-8 outline-none sm:px-6 md:pt-12 lg:px-8">
+        {# Одноразові повідомлення (flash): їх кладе в сесію функція flash() у маршруті,
+           а тут вони виводяться один раз і зникають. Категорія вибирає колір і роль для екранної читалки #}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="mb-8 space-y-2">
+            {% for category, message in messages %}
+            <div role="{{ 'alert' if category == 'error' else 'status' }}"
+                 class="flex items-start gap-3 rounded-xl border-l-4 px-4 py-3 {% if category == 'error' %}border-red-600 bg-red-50 text-red-900 dark:bg-red-950/50 dark:text-red-100{% else %}border-emerald-600 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-100{% endif %}">
+                <i class="ph {{ 'ph-warning-circle' if category == 'error' else 'ph-check-circle' }} mt-0.5 shrink-0 text-xl" aria-hidden="true"></i>
+                <p>{{ message }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
         {% block content %}{% endblock %}
     </main>
 

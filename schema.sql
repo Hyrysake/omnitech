@@ -24,3 +24,13 @@ CREATE TABLE IF NOT EXISTS products (
 
 -- Індекс прискорює пошук товарів за категорією (фільтр у каталозі).
 CREATE INDEX IF NOT EXISTS idx_products_category ON products (category_id);
+
+-- Користувачі сайту. Пароль зберігається лише у вигляді хеша, ніколи відкритим текстом.
+CREATE TABLE IF NOT EXISTS users (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    name          TEXT NOT NULL,
+    email         TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    role          TEXT NOT NULL DEFAULT 'client' CHECK (role IN ('admin', 'client')),
+    created_at    TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
