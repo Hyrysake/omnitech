@@ -1,0 +1,50 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{% if product %}Редагування товару{% else %}Новий товар{% endif %}{% endblock %}
+
+{% block admin_content %}
+{# Одна форма і для додавання, і для редагування. Якщо product порожній, це додавання.
+   form містить значення полів: або поточні з бази, або те, що людина ввела з помилкою #}
+<h1 class="font-display text-4xl font-semibold tracking-tight sm:text-5xl">
+    {% if product %}Редагування товару{% else %}Новий товар{% endif %}
+</h1>
+
+<form method="post" class="card mt-8 max-w-2xl space-y-5 p-6 sm:p-8">
+    <div>
+        <label for="name" class="label">Назва</label>
+        <input id="name" name="name" type="text" value="{{ form.name }}" required minlength="3" maxlength="120" class="input">
+    </div>
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+            <label for="category_id" class="label">Категорія</label>
+            <select id="category_id" name="category_id" required class="input">
+                <option value="">Оберіть категорію</option>
+                {% for category in categories %}
+                <option value="{{ category.id }}"{% if form.category_id|string == category.id|string %} selected{% endif %}>{{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="price" class="label">Ціна, грн</label>
+            <input id="price" name="price" type="number" min="1" step="1" inputmode="numeric" value="{{ form.price }}" required class="input">
+        </div>
+    </div>
+    <div>
+        <label for="image" class="label">Адреса картинки</label>
+        <input id="image" name="image" type="url" value="{{ form.image }}" required placeholder="https://picsum.photos/id/1/600/400" class="input">
+    </div>
+    <div>
+        <label for="description" class="label">Опис</label>
+        <textarea id="description" name="description" rows="5" maxlength="1000" class="input">{{ form.description }}</textarea>
+    </div>
+    <label class="flex min-h-11 cursor-pointer items-center gap-3">
+        <input type="checkbox" name="is_featured" value="1" {% if form.is_featured %}checked{% endif %} class="size-5 accent-gold">
+        <span>Показувати на головній сторінці</span>
+    </label>
+
+    <div class="flex flex-wrap gap-3 pt-2">
+        <button type="submit" class="btn btn-primary">Зберегти</button>
+        <a href="{{ url_for('admin_catalog.products') }}" class="btn btn-secondary">Скасувати</a>
+    </div>
+</form>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Реєстрація{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-md">
+    <h1 class="reveal font-display text-5xl font-semibold tracking-tight">Реєстрація</h1>
+    <p class="reveal mt-3 text-muted dark:text-muted-dark" style="--i: 1">Акаунт потрібен, щоб бачити свої дані під час оформлення замовлення.</p>
+
+    {# form — словник зі значеннями, які людина вже ввела: якщо є помилка, поля не очищуються.
+       Пароль у форму назад не підставляємо ніколи #}
+    <form method="post" action="{{ url_for('auth.register') }}" class="card reveal mt-8 space-y-5 p-6 sm:p-8" style="--i: 2">
+        <input type="hidden" name="next" value="{{ next_url }}">
+        <div>
+            <label for="name" class="label">Ім'я</label>
+            <input id="name" name="name" type="text" value="{{ form.name }}" required minlength="2" maxlength="60" autocomplete="name" autofocus class="input">
+        </div>
+        <div>
+            <label for="email" class="label">Пошта</label>
+            <input id="email" name="email" type="email" value="{{ form.email }}" required autocomplete="email" class="input">
+        </div>
+        <div>
+            <label for="password" class="label">Пароль</label>
+            <input id="password" name="password" type="password" required minlength="6" autocomplete="new-password" aria-describedby="password-hint" class="input">
+            <p id="password-hint" class="mt-1.5 text-sm text-muted dark:text-muted-dark">Щонайменше 6 символів.</p>
+        </div>
+        <div>
+            <label for="password_repeat" class="label">Повторіть пароль</label>
+            <input id="password_repeat" name="password_repeat" type="password" required minlength="6" autocomplete="new-password" class="input">
+        </div>
+        <button type="submit" class="btn btn-primary w-full">Створити акаунт</button>
+    </form>
+
+    <p class="reveal mt-6 text-center text-muted dark:text-muted-dark" style="--i: 3">
+        Уже є акаунт?
+        <a href="{{ url_for('auth.login', next=next_url or None) }}" class="font-semibold text-gold underline-offset-4 hover:underline dark:text-gold-bright">Увійти</a>
+    </p>
+</section>
+{% endblock %}

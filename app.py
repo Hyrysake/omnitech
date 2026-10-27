@@ -17,6 +17,10 @@ from flask import Flask, render_template
 import db
 from models.catalog import get_featured_products
 from routes.shop import shop_bp
+from routes.auth import auth_bp
+from security import load_logged_in_user
+from routes.admin import admin_bp
+from routes.admin_catalog import admin_catalog_bp
 
 # Створюємо застосунок. Змінна __name__ підказує Flask, де лежить цей файл,
 # щоб він знайшов поруч теку templates/ з HTML-шаблонами.
@@ -26,6 +30,13 @@ app = Flask(__name__)
 # (так перевіряють роботу сайту на тимчасовій базі, не чіпаючи справжню).
 app.config['DATABASE'] = os.environ.get('OMNITECH_DB') or os.path.join(app.root_path, 'db.sqlite')
 
+# Ключ, яким Flask підписує cookie сесії. Без підпису користувач міг би підробити в cookie
+# номер чужого акаунта. У справжньому проєкті ключ задають змінною середовища SECRET_KEY,
+# а запасне значення нижче годиться лише для навчання.
+app.secret_key = os.environ.get('SECRET_KEY') or 'omnitech-dev-key-change-me'
+# Браузер не надсилає cookie сесії з запитами, які ініційовано чужими сайтами (захист від CSRF)
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+
 # Підключаємо базу: закривати з'єднання після кожного запиту й створити таблиці, якщо їх ще немає
 db.init_app(app)
 with app.app_context():
@@ -33,6 +44,12 @@ with app.app_context():
 
 # Blueprint — окремий файл зі своїми маршрутами. Підключаємо їх до застосунку.
 app.register_blueprint(shop_bp)
+app.register_blueprint(auth_bp)
+app.register_blueprint(admin_bp)
+app.register_blueprint(admin_catalog_bp)
+
+# Перед кожним запитом з'ясовуємо, хто зараз користується сайтом (результат лежить у g.user)
+app.before_request(load_logged_in_user)
 
 
 @app.template_filter('money')
@@ -138,6 +155,13 @@ def page_not_found(error):
     """Сторінка не знайдена (наприклад, товару з таким номером немає)."""
     return render_template('error.html', code=404, title='Сторінку не знайдено',
                            text='Можливо, адресу введено з помилкою або товар уже прибрали з каталогу.'), 404
+
+
+@app.errorhandler(403)
+def forbidden(error):
+    """Доступ заборонено (клієнт намагається відкрити адмін-панель)."""
+    return render_template('error.html', code=403, title='Доступ заборонено',
+                           text='Цей розділ доступний лише адміністратору магазину.'), 403
 
 
 # ==================== Запуск ====================

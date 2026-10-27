@@ -1,0 +1,54 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Категорії{% endblock %}
+
+{% block admin_content %}
+<h1 class="font-display text-4xl font-semibold tracking-tight sm:text-5xl">Категорії</h1>
+
+{# Нова категорія додається простою формою прямо над списком #}
+<form method="post" action="{{ url_for('admin_catalog.category_new') }}" class="mt-8 flex max-w-xl flex-wrap items-end gap-3">
+    <div class="min-w-0 flex-1 basis-56">
+        <label for="name" class="label">Нова категорія</label>
+        <input id="name" name="name" type="text" required minlength="2" maxlength="60" placeholder="Наприклад: Розумний дім" class="input">
+    </div>
+    <button type="submit" class="btn btn-primary">
+        <i class="ph ph-plus" aria-hidden="true"></i>
+        Додати
+    </button>
+</form>
+
+<div class="table-wrap mt-8">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th scope="col">Назва</th>
+                <th scope="col" class="text-right">Товарів</th>
+                <th scope="col"><span class="sr-only">Дії</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in categories %}
+            <tr>
+                <td class="font-semibold">{{ category.name }}</td>
+                <td class="text-right tabular-nums">{{ category.products_count }}</td>
+                <td>
+                    <div class="flex items-center justify-end gap-2">
+                        <a href="{{ url_for('admin_catalog.category_edit', category_id=category.id) }}" class="btn btn-secondary px-3 sm:px-4" aria-label="Змінити категорію {{ category.name }}">
+                            <i class="ph ph-pencil-simple sm:hidden" aria-hidden="true"></i>
+                            <span class="hidden sm:inline">Змінити</span>
+                        </a>
+                        <form method="post" action="{{ url_for('admin_catalog.category_delete', category_id=category.id) }}"
+                              data-confirm="Видалити категорію «{{ category.name }}»?">
+                            <button type="submit" class="btn btn-danger px-3 sm:px-4" aria-label="Видалити категорію {{ category.name }}">
+                                <i class="ph ph-trash" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<p class="mt-4 text-sm text-muted dark:text-muted-dark">Категорію, у якій є товари, видалити не можна: цього не дозволяє база даних.</p>
+{% endblock %}

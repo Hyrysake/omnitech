@@ -1,0 +1,75 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Товари{% endblock %}
+
+{% block admin_content %}
+<div class="flex flex-wrap items-center justify-between gap-4">
+    <div>
+        <h1 class="font-display text-4xl font-semibold tracking-tight sm:text-5xl">Товари</h1>
+        <p class="mt-2 text-muted dark:text-muted-dark">Усього товарів: <span class="font-semibold tabular-nums">{{ products|length }}</span></p>
+    </div>
+    <a href="{{ url_for('admin_catalog.product_new') }}" class="btn btn-primary">
+        <i class="ph ph-plus" aria-hidden="true"></i>
+        Додати товар
+    </a>
+</div>
+
+{% if products %}
+<div class="table-wrap mt-8">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th scope="col" class="hidden sm:table-cell"><span class="sr-only">Фото</span></th>
+                <th scope="col">Назва</th>
+                <th scope="col" class="hidden md:table-cell">Категорія</th>
+                <th scope="col" class="text-right whitespace-nowrap">Ціна, грн</th>
+                <th scope="col" class="hidden sm:table-cell">На головній</th>
+                <th scope="col"><span class="sr-only">Дії</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td class="hidden sm:table-cell">
+                    <img src="{{ product.image }}" alt="" width="64" height="48" loading="lazy" class="h-12 w-16 rounded-lg object-cover">
+                </td>
+                <td>
+                    <p class="font-semibold">{{ product.name }}</p>
+                    <p class="text-xs text-muted md:hidden dark:text-muted-dark">{{ product.category }}</p>
+                </td>
+                <td class="hidden md:table-cell">{{ product.category }}</td>
+                <td class="whitespace-nowrap text-right font-semibold tabular-nums">{{ product.price|money }}</td>
+                <td class="hidden sm:table-cell">
+                    {% if product.is_featured %}
+                    <i class="ph ph-star-fill text-lg text-gold dark:text-gold-bright" aria-hidden="true"></i>
+                    <span class="sr-only">Так</span>
+                    {% else %}
+                    <span class="text-muted dark:text-muted-dark">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="flex items-center justify-end gap-2">
+                        <a href="{{ url_for('admin_catalog.product_edit', product_id=product.id) }}" class="btn btn-secondary px-3 sm:px-4" aria-label="Змінити товар {{ product.name }}">
+                            <i class="ph ph-pencil-simple sm:hidden" aria-hidden="true"></i>
+                            <span class="hidden sm:inline">Змінити</span>
+                        </a>
+                        <form method="post" action="{{ url_for('admin_catalog.product_delete', product_id=product.id) }}"
+                              data-confirm="Видалити товар «{{ product.name }}»? Цю дію не можна скасувати.">
+                            <button type="submit" class="btn btn-danger px-3 sm:px-4" aria-label="Видалити товар {{ product.name }}">
+                                <i class="ph ph-trash" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card mt-8 px-6 py-14 text-center">
+    <p class="font-display text-3xl font-semibold">Товарів ще немає</p>
+    <p class="mt-2 text-muted dark:text-muted-dark">Додайте перший товар, щоб він з'явився в каталозі.</p>
+</div>
+{% endif %}
+{% endblock %}

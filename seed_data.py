@@ -7,6 +7,8 @@
 Щоб почати з чистого аркуша, достатньо видалити файл db.sqlite і запустити сайт знову.
 """
 
+from werkzeug.security import generate_password_hash
+
 # Порядок категорій у списку — це порядок, у якому вони показуються на сайті.
 CATEGORIES = [
     'Ноутбуки',
@@ -77,6 +79,14 @@ PRODUCTS = [
      9990, 91, 0),
 ]
 
+# Демонстраційні акаунти (пароль відомий усім, бо лежить у README). Це нормально для
+# локальної навчальної бази, але на справжньому сайті так робити не можна.
+# (ім'я, email, пароль, роль)
+USERS = [
+    ('Адміністратор OmniTech', 'admin@omnitech.example', 'admin123', 'admin'),
+    ('Олена Коваль', 'client@omnitech.example', 'client123', 'client'),
+]
+
 
 def _is_empty(db, table):
     """Повертає True, якщо в таблиці немає жодного рядка.
@@ -101,4 +111,11 @@ def seed_database(db):
             [(category_ids[category], name, description, price,
               f'https://picsum.photos/id/{photo_id}/600/400', featured)
              for name, category, description, price, photo_id, featured in PRODUCTS],
+        )
+
+    if _is_empty(db, 'users'):
+        db.executemany(
+            'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)',
+            # generate_password_hash перетворює пароль на «хеш»: за ним пароль не відновити
+            [(name, email, generate_password_hash(password), role) for name, email, password, role in USERS],
         )

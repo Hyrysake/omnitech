@@ -1,0 +1,39 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Адмін-панель{% endblock %}
+
+{% block admin_content %}
+{# Картка з числом. Якщо передано href, уся картка стає посиланням на відповідний розділ.
+   hot підсвічує картку, коли там є щось, що чекає на увагу адміністратора #}
+{% macro stat(label, value, icon, href=None, hot=False) %}
+    {% set inner %}
+        <span class="grid size-12 place-items-center rounded-full {% if hot %}bg-gold text-white dark:bg-gold-bright dark:text-ink{% else %}bg-gold/10 text-gold dark:bg-gold-bright/15 dark:text-gold-bright{% endif %}">
+            <i class="ph {{ icon }} text-2xl" aria-hidden="true"></i>
+        </span>
+        <p class="mt-5 text-sm text-muted dark:text-muted-dark">{{ label }}</p>
+        <p class="mt-1 font-display text-5xl font-semibold lining-nums tabular-nums">{{ value }}</p>
+    {% endset %}
+    {% if href %}
+    <a href="{{ href }}" class="card block p-6 transition-shadow duration-300 hover:shadow-lg">{{ inner }}</a>
+    {% else %}
+    <div class="card p-6">{{ inner }}</div>
+    {% endif %}
+{% endmacro %}
+
+<h1 class="reveal font-display text-4xl font-semibold tracking-tight sm:text-5xl">Огляд</h1>
+<p class="reveal mt-3 text-lg text-muted dark:text-muted-dark" style="--i: 1">Вітаємо, {{ g.user.name }}. Ось що зараз у магазині.</p>
+
+<div class="reveal mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3" style="--i: 2">
+    {{ stat('Товарів у каталозі', stats.products, 'ph-package', url_for('admin_catalog.products')) }}
+    {{ stat('Категорій', stats.categories, 'ph-tag', url_for('admin_catalog.categories')) }}
+    {{ stat('Користувачів', stats.users, 'ph-users') }}
+</div>
+
+<div class="reveal mt-10 flex flex-wrap gap-3" style="--i: 3">
+    <a href="{{ url_for('admin_catalog.product_new') }}" class="btn btn-primary">
+        <i class="ph ph-plus" aria-hidden="true"></i>
+        Додати товар
+    </a>
+    <a href="{{ url_for('admin_catalog.categories') }}" class="btn btn-secondary">Керувати категоріями</a>
+</div>
+{% endblock %}
