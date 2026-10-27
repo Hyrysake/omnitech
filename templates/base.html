@@ -44,6 +44,34 @@
         /* Темна тема вмикається класом .dark на тегу <html>.
            Без цього правила варіант dark: реагує лише на тему операційної системи. */
         @custom-variant dark (&:where(.dark, .dark *));
+
+        /* Повторювані елементи інтерфейсу (кнопки, поля форм, картки) описані один раз.
+           У шаблоні пишемо class="btn btn-primary" замість десятка утиліт у кожній кнопці.
+           min-h-11 = 44 px: мінімальний зручний розмір цілі для пальця */
+        @layer components {
+            .btn {
+                @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-2 text-sm font-semibold transition duration-200 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50;
+            }
+            .btn-primary {
+                @apply bg-gold text-white hover:bg-yellow-800 dark:bg-gold-bright dark:text-ink dark:hover:bg-yellow-500;
+            }
+            .btn-secondary {
+                @apply border border-line bg-card text-ink hover:bg-stone-100 dark:border-line-dark dark:bg-coal dark:text-paper dark:hover:bg-graphite;
+            }
+            .btn-danger {
+                @apply border border-red-300 bg-card text-red-700 hover:bg-red-50 dark:border-red-900 dark:bg-coal dark:text-red-400 dark:hover:bg-red-950;
+            }
+            /* Поле форми: розмір шрифту 16 px не дає iPhone збільшувати сторінку при фокусі */
+            .input {
+                @apply block min-h-11 w-full rounded-xl border border-line bg-card px-4 py-2 text-base text-ink placeholder:text-muted/60 dark:border-line-dark dark:bg-coal dark:text-paper dark:placeholder:text-muted-dark/60;
+            }
+            .label {
+                @apply mb-1.5 block text-sm font-medium;
+            }
+            .card {
+                @apply rounded-2xl border border-line bg-card dark:border-line-dark dark:bg-coal;
+            }
+        }
     </style>
     <script>
         // Вмикаємо збережену тему ще ДО відмалювання сторінки,
@@ -137,8 +165,10 @@
    Він малює один пункт меню. request.endpoint — ім'я функції поточної сторінки ('home', 'about'...).
    Якщо пункт веде на поточну сторінку, він стає темною «пігулкою» і отримує aria-current="page",
    щоб і людина, і екранна читалка знали, де вона зараз #}
-{% macro nav_link(endpoint, label, mobile=False) %}
-    {% set active = request.endpoint == endpoint %}
+{# Параметр prefix потрібен розділам з кількома сторінками: пункт «Каталог» підсвічений і на сторінці
+   товару (shop.product), а «Адмін-панель» — на всіх сторінках адмінки #}
+{% macro nav_link(endpoint, label, mobile=False, prefix=None) %}
+    {% set active = request.endpoint == endpoint or (prefix and request.endpoint and request.endpoint.startswith(prefix)) %}
     <a href="{{ url_for(endpoint) }}"{% if active %} aria-current="page"{% endif %}
        class="{% if mobile %}block rounded-xl px-4 py-3 text-base{% else %}rounded-full px-4 py-2 text-sm{% endif %} font-medium transition-colors duration-200 {% if active %}bg-coal text-paper dark:bg-paper dark:text-ink{% else %}text-graphite hover:bg-coal/5 dark:text-stone-300 dark:hover:bg-white/10{% endif %}">
         {{ label }}
@@ -158,19 +188,21 @@
     <header class="sticky top-0 z-40 px-3 pt-3 sm:px-4">
         <nav aria-label="Головне меню"
              class="mx-auto max-w-7xl rounded-2xl border border-white/60 bg-white/65 shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_8px_32px_rgba(28,25,23,0.10)] backdrop-blur-xl backdrop-saturate-150 reduced-transparency:bg-card reduced-transparency:backdrop-blur-none dark:border-white/10 dark:bg-coal/65 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_32px_rgba(0,0,0,0.45)] dark:reduced-transparency:bg-coal">
-            <div class="flex h-16 items-center justify-between gap-4 pl-4 pr-2">
-                <!-- Логотип — одночасно посилання на головну -->
-                <a href="{{ url_for('home') }}" class="flex items-center gap-2.5">
-                    <span class="grid size-9 place-items-center rounded-xl bg-coal text-gold-bright dark:bg-paper dark:text-gold">
+            <div class="flex h-16 items-center justify-between gap-2 pl-3 pr-2 sm:gap-4 sm:pl-4">
+                <!-- Логотип — одночасно посилання на головну. На дуже вузькому екрані він трохи менший,
+                     щоб поруч помістилися кошик, перемикач теми й кнопка меню -->
+                <a href="{{ url_for('home') }}" class="flex items-center gap-2 sm:gap-2.5">
+                    <span class="grid size-8 place-items-center rounded-xl bg-coal text-gold-bright sm:size-9 dark:bg-paper dark:text-gold">
                         <i class="ph ph-cpu text-xl" aria-hidden="true"></i>
                     </span>
-                    <span class="font-display text-2xl font-semibold tracking-tight">OmniTech</span>
+                    <span class="font-display text-xl font-semibold tracking-tight sm:text-2xl">OmniTech</span>
                 </a>
 
                 <div class="flex items-center gap-1">
-                    <!-- Меню для широких екранів: приховане (hidden), а від ширини md (768px) — видиме -->
-                    <div class="hidden md:flex items-center gap-1">
+                    <!-- Меню для широких екранів: приховане (hidden), а від ширини xl (1280px) — видиме -->
+                    <div class="hidden xl:flex items-center gap-1">
                         {{ nav_link('home', 'Головна') }}
+                        {{ nav_link('shop.catalog', 'Каталог', prefix='shop.') }}
                         {{ nav_link('about', 'Про нас') }}
                         {{ nav_link('contacts', 'Контакти') }}
                         {{ nav_link('faq', 'Часті питання') }}
@@ -185,10 +217,10 @@
                         <i class="ph ph-sun text-xl hidden dark:inline-block" aria-hidden="true"></i>
                     </button>
 
-                    <!-- Кнопка меню для мобільних пристроїв (md:hidden — зникає на широких екранах).
+                    <!-- Кнопка меню для мобільних пристроїв (xl:hidden — зникає на широких екранах).
                          Розмір 44×44 px — мінімальна зручна ціль для пальця -->
                     <button id="mobile-menu-button" type="button" aria-label="Відкрити меню" aria-expanded="false" aria-controls="mobile-menu"
-                            class="md:hidden grid size-11 cursor-pointer place-items-center rounded-xl transition-colors duration-200 hover:bg-coal/5 dark:hover:bg-white/10">
+                            class="xl:hidden grid size-11 cursor-pointer place-items-center rounded-xl transition-colors duration-200 hover:bg-coal/5 dark:hover:bg-white/10">
                         <span class="relative block h-6 w-6">
                             <span class="burger-line line1 absolute left-0 block h-0.5 w-6 rounded-full bg-current"></span>
                             <span class="burger-line line2 absolute left-0 block h-0.5 w-6 rounded-full bg-current"></span>
@@ -199,8 +231,9 @@
             </div>
 
             <!-- Мобільне меню (приховане за замовчуванням, відкривається кнопкою-бургером) -->
-            <div id="mobile-menu" class="hidden md:hidden space-y-1 px-2 pb-3">
+            <div id="mobile-menu" class="hidden xl:hidden space-y-1 px-2 pb-3">
                 {{ nav_link('home', 'Головна', mobile=True) }}
+                {{ nav_link('shop.catalog', 'Каталог', mobile=True, prefix='shop.') }}
                 {{ nav_link('about', 'Про нас', mobile=True) }}
                 {{ nav_link('contacts', 'Контакти', mobile=True) }}
                 {{ nav_link('faq', 'Часті питання', mobile=True) }}
