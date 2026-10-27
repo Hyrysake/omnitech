@@ -1,0 +1,18 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Зміна категорії{% endblock %}
+
+{% block admin_content %}
+<h1 class="font-display text-4xl font-semibold tracking-tight sm:text-5xl">Зміна категорії</h1>
+
+<form method="post" class="card mt-8 max-w-xl space-y-5 p-6 sm:p-8">
+    <div>
+        <label for="name" class="label">Назва</label>
+        <input id="name" name="name" type="text" value="{{ name }}" required minlength="2" maxlength="60" autofocus class="input">
+    </div>
+    <div class="flex flex-wrap gap-3 pt-2">
+        <button type="submit" class="btn btn-primary">Зберегти</button>
+        <a href="{{ url_for('admin_catalog.categories') }}" class="btn btn-secondary">Скасувати</a>
+    </div>
+</form>
+{% endblock %}

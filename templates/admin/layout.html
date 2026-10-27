@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{# Спільний каркас усіх сторінок адмін-панелі: заголовок розділу й бічне меню.
+   Кожна сторінка адмінки успадковує цей файл і заповнює лише блок admin_content #}
+
+{# Макрос малює один пункт бічного меню. prefix — початок імені маршруту: пункт «Товари» світиться
+   на списку товарів, у формі додавання й у формі редагування, бо їх імена починаються однаково #}
+{% macro tab(endpoint, label, icon, prefix, badge=0) %}
+    {% set active = request.endpoint and request.endpoint.startswith(prefix) %}
+    <a href="{{ url_for(endpoint) }}"{% if active %} aria-current="page"{% endif %}
+       class="flex min-h-11 items-center gap-3 rounded-xl px-4 py-2 text-sm font-medium transition-colors duration-200 {% if active %}bg-coal text-paper dark:bg-paper dark:text-ink{% else %}text-graphite hover:bg-coal/5 dark:text-stone-300 dark:hover:bg-white/10{% endif %}">
+        <i class="ph {{ icon }} text-xl" aria-hidden="true"></i>
+        <span class="flex-1">{{ label }}</span>
+        {% if badge %}
+        <span class="grid h-5 min-w-5 place-items-center rounded-full bg-gold px-1.5 text-[11px] font-semibold leading-none text-white tabular-nums dark:bg-gold-bright dark:text-ink">{{ badge }}</span>
+        {% endif %}
+    </a>
+{% endmacro %}
+
+{% block content %}
+<div class="grid grid-cols-1 gap-8 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-10">
+    <aside>
+        <p class="px-4 text-xs font-semibold uppercase tracking-wider text-muted dark:text-muted-dark">Адмін-панель</p>
+        <nav aria-label="Розділи адмін-панелі" class="mt-3 flex flex-wrap gap-1 lg:flex-col">
+            {{ tab('admin.dashboard', 'Огляд', 'ph-squares-four', 'admin.') }}
+            {{ tab('admin_catalog.products', 'Товари', 'ph-package', 'admin_catalog.product') }}
+            {{ tab('admin_catalog.categories', 'Категорії', 'ph-tag', 'admin_catalog.categor') }}
+        </nav>
+    </aside>
+
+    <section class="min-w-0">
+        {% block admin_content %}{% endblock %}
+    </section>
+</div>
+{% endblock %}

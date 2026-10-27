@@ -19,6 +19,8 @@ from models.catalog import get_featured_products
 from routes.shop import shop_bp
 from routes.auth import auth_bp
 from security import load_logged_in_user
+from routes.admin import admin_bp
+from routes.admin_catalog import admin_catalog_bp
 
 # Створюємо застосунок. Змінна __name__ підказує Flask, де лежить цей файл,
 # щоб він знайшов поруч теку templates/ з HTML-шаблонами.
@@ -43,6 +45,8 @@ with app.app_context():
 # Blueprint — окремий файл зі своїми маршрутами. Підключаємо їх до застосунку.
 app.register_blueprint(shop_bp)
 app.register_blueprint(auth_bp)
+app.register_blueprint(admin_bp)
+app.register_blueprint(admin_catalog_bp)
 
 # Перед кожним запитом з'ясовуємо, хто зараз користується сайтом (результат лежить у g.user)
 app.before_request(load_logged_in_user)

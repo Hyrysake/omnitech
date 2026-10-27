@@ -71,6 +71,25 @@
             .card {
                 @apply rounded-2xl border border-line bg-card dark:border-line-dark dark:bg-coal;
             }
+            /* Таблиці адмін-панелі. .table-wrap дозволяє прокручувати таблицю всередині картки,
+               коли вона не вміщується на вузькому екрані, а сторінка при цьому не розтягується.
+               relative потрібен, щоб приховані підписи sr-only (вони позиціюються абсолютно)
+               теж лишалися всередині картки, а не розтягували сторінку вшир */
+            .table-wrap {
+                @apply relative overflow-x-auto rounded-2xl border border-line bg-card dark:border-line-dark dark:bg-coal;
+            }
+            .data-table {
+                @apply w-full text-left text-sm;
+            }
+            .data-table th {
+                @apply px-3 py-3 text-xs font-semibold uppercase tracking-wider text-muted sm:px-4 dark:text-muted-dark;
+            }
+            .data-table td {
+                @apply px-3 py-3 align-middle sm:px-4;
+            }
+            .data-table tbody tr {
+                @apply border-t border-line dark:border-line-dark;
+            }
         }
     </style>
     <script>
@@ -181,6 +200,9 @@
 {% macro account_links(mobile=False) %}
     {% set item = 'block w-full rounded-xl px-4 py-3 text-left text-base' if mobile else 'rounded-full px-4 py-2 text-sm' %}
     {% if g.user %}
+        {% if g.user.role == 'admin' %}
+            {{ nav_link('admin.dashboard', 'Адмін-панель', mobile, 'admin') }}
+        {% endif %}
         <span class="{% if mobile %}flex px-4 py-2{% else %}flex px-2{% endif %} items-center gap-2 text-sm text-muted dark:text-muted-dark">
             <i class="ph ph-user-circle text-xl" aria-hidden="true"></i>
             <span class="max-w-[9rem] truncate">{{ g.user.name }}</span>
@@ -318,6 +340,16 @@
                 setTimeout(() => {
                     mobileMenu.classList.add('hidden');
                 }, 180);
+            }
+        });
+
+        // ----- Підтвердження небезпечних дій -----
+        // Форма з атрибутом data-confirm="..." перед відправкою питає «Ви впевнені?».
+        // Текст лежить в атрибуті, а не в onclick, тож лапки в назві товару нічого не ламають
+        document.addEventListener('submit', (event) => {
+            const message = event.target.dataset.confirm;
+            if (message && !confirm(message)) {
+                event.preventDefault();
             }
         });
 
