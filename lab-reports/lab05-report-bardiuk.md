@@ -68,15 +68,15 @@
 
 Пошук «ноутбук» у Postman: 2 товари на сторінці, лічильники `total` і `pages`:
 
-![Пошук товарів](screenshots/lab05-bardiuk-products.png)
+![Пошук товарів](screenshots/lab05-bardiuk-products.jpg)
 
 Товар у v2: категорія й рейтинг усередині:
 
-![API v2](screenshots/lab05-bardiuk-v2.png)
+![API v2](screenshots/lab05-bardiuk-v2.jpg)
 
 Завантаження картинки через `/docs`: 200, нова адреса `/media/products/…`:
 
-![Завантаження картинки](screenshots/lab05-bardiuk-upload.png)
+![Завантаження картинки](screenshots/lab05-bardiuk-upload.jpg)
 
 ## Технічні рішення
 
