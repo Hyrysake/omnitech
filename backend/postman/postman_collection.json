@@ -1,0 +1,5046 @@
+{
+  "info": {
+    "_postman_id": "8f5997e4-e7dc-57d1-936e-52daf23a9a85",
+    "name": "OmniTech API (FastAPI)",
+    "description": "Перевірка REST API OmniTech. Запустіть сервер (uvicorn app.main:app) і базу з демо-даними (python -m app.seed --reset), потім Run collection. Токени входу зберігаються в змінних колекції.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "0. Службові",
+      "item": [
+        {
+          "name": "Стан сервера",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "ca602056-b1cc-52f8-a79b-30efba619b40",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"База доступна\", function () { pm.expect(pm.response.json().database).to.eql(\"ok\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Неіснуюча адреса → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "3695bb24-56c1-5549-980e-c2fe8b5e1c2b",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 404\", function () { pm.response.to.have.status(404); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/nothing",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "nothing"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Непідтримуваний метод → 405",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "ddb6d229-e3b2-5731-9009-7d0e22e332ff",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 405\", function () { pm.response.to.have.status(405); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Непідтримуваний метод для категорій → 405",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "4e836142-66be-53c7-b4c4-1835bd4ec162",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 405\", function () { pm.response.to.have.status(405); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": ""
+    },
+    {
+      "name": "1. Авторизація",
+      "item": [
+        {
+          "name": "Реєстрація нового клієнта",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "28ca3a2a-a921-5726-b371-db2c04088ca6",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Роль client, хеша пароля немає\", function () { const u = pm.response.json(); pm.expect(u.role).to.eql(\"client\"); pm.expect(u).to.not.have.property(\"password_hash\"); });"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "65165280-1b45-56db-a148-fae180738647",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"newEmail\", \"student\" + Date.now() + \"@example.com\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Студент Postman\",\n  \"email\": \"{{newEmail}}\",\n  \"password\": \"secret123\",\n  \"password_confirm\": \"secret123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Реєстрація з тією самою поштою → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "3d4eea63-8858-56b6-9305-54e41d41dd29",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 409\", function () { pm.response.to.have.status(409); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Студент Postman\",\n  \"email\": \"{{newEmail}}\",\n  \"password\": \"secret123\",\n  \"password_confirm\": \"secret123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Реєстрація з помилками → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "32007416-476b-56be-aefb-1c38f7c612e9",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 422\", function () { pm.response.to.have.status(422); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });",
+                  "pm.test(\"Є список помилок полів\", function () { pm.expect(pm.response.json().errors).to.be.an(\"array\").that.is.not.empty; });",
+                  "pm.test(\"Помилки для name, email, password\", function () { const f = pm.response.json().errors.map(e => e.field); pm.expect(f).to.include.members([\"name\", \"email\", \"password\"]); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Я\",\n  \"email\": \"не-пошта\",\n  \"password\": \"1\",\n  \"password_confirm\": \"1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Вхід новим клієнтом",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "22abcdce-8f4d-5ad6-b586-c24b3bae540b",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.collectionVariables.set(\"studentToken\", pm.response.json().access_token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/token",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "token"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "{{newEmail}}"
+                },
+                {
+                  "key": "password",
+                  "value": "secret123"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Вхід з неправильним паролем → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "19870291-c70d-52d3-92b5-019dbaeb78fb",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/token",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "token"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "client@omnitech.example"
+                },
+                {
+                  "key": "password",
+                  "value": "wrong"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Вхід як адміністратор",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "1675bf1a-2ec0-5aa0-b325-458cf7803fc8",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Є токен типу bearer\", function () { const d = pm.response.json(); pm.expect(d.token_type).to.eql(\"bearer\"); pm.expect(d.access_token).to.be.a(\"string\"); pm.expect(d.user.role).to.eql(\"admin\"); });",
+                  "pm.collectionVariables.set(\"adminToken\", pm.response.json().access_token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/token",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "token"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "admin@omnitech.example"
+                },
+                {
+                  "key": "password",
+                  "value": "admin123"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Вхід як клієнт",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "66a9fe22-8a41-51b7-b680-c31901dce9ca",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.collectionVariables.set(\"clientToken\", pm.response.json().access_token);",
+                  "pm.collectionVariables.set(\"clientId\", pm.response.json().user.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/token",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "token"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "client@omnitech.example"
+                },
+                {
+                  "key": "password",
+                  "value": "client123"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Вхід за стандартом OAuth2: тіло — форма (x-www-form-urlencoded), пошта в полі username. Токен зберігається в змінних колекції."
+    },
+    {
+      "name": "2. Профіль і користувачі",
+      "item": [
+        {
+          "name": "Мій профіль",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "db441369-6cea-5ea0-b0d5-29de99460abf",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Це клієнт\", function () { pm.expect(pm.response.json().email).to.eql(\"client@omnitech.example\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Профіль без токена → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "7081afca-1307-5e7f-a991-60ce1a037748",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Змінити ім'я (PATCH)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "0e8c31a9-d151-509e-b64b-7fc3f9b3ac76",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Ім'я збережено, пошта та сама\", function () { const u = pm.response.json(); pm.expect(u.name).to.eql(\"Олена Коваль\"); pm.expect(u.email).to.eql(\"client@omnitech.example\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Олена Коваль\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Змінити пошту на некоректну → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "dc001b8e-aae0-5ffb-9e94-116e00289c2b",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 422\", function () { pm.response.to.have.status(422); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });",
+                  "pm.test(\"Є список помилок полів\", function () { pm.expect(pm.response.json().errors).to.be.an(\"array\").that.is.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"olena\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Змінити пароль з неправильним поточним → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "aa303980-6823-5463-b32d-e2b6c4b7d6eb",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/me/password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me",
+                "password"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_password\": \"wrong\",\n  \"new_password\": \"newpass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Змінити пароль (новий клієнт)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "330fff66-5a01-55a8-9248-4bc357ff2ae2",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/me/password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me",
+                "password"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_password\": \"secret123\",\n  \"new_password\": \"secret456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Адміністратор видаляє свій акаунт → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "53c9e2ed-364a-56e5-9136-317b60512c89",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 409\", function () { pm.response.to.have.status(409); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Усі користувачі (адмін)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "e78f2548-8650-55f3-b844-220050dd3202",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Сторінка з items і total\", function () { const d = pm.response.json(); pm.expect(d).to.have.keys(\"items\", \"total\", \"page\", \"size\", \"pages\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users?page=1&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Усі користувачі від клієнта → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "0345551b-df00-5c92-a322-129577f3a503",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 403\", function () { pm.response.to.have.status(403); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "users"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": ""
+    },
+    {
+      "name": "3. Категорії",
+      "item": [
+        {
+          "name": "Усі категорії",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "4ac0341e-b76f-5ce9-89f5-855d34e5b754",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Є кількість товарів\", function () { pm.expect(pm.response.json()[0]).to.have.keys(\"id\", \"name\", \"product_count\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Нова категорія (адмін)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "ff6b1668-7bfe-59a7-b299-fb0597663f30",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.collectionVariables.set(\"categoryId\", pm.response.json().id);"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "3fb1d930-21f9-509b-b987-96cb973962b8",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"runId\", String(Date.now()).slice(-6));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Дрони {{runId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Та сама назва → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "b448a80c-489c-5c1e-8240-0e7878658606",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 409\", function () { pm.response.to.have.status(409); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Дрони {{runId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Нова категорія від клієнта → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "bc533a92-ce00-5668-bd43-8f2b611144ba",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 403\", function () { pm.response.to.have.status(403); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Клієнтська\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Перейменувати категорію",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "6db3d0b5-71cd-5155-90d4-bed6507f7cbf",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/categories/{{categoryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories",
+                "{{categoryId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Квадрокоптери {{runId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Перейменувати на занадто коротку назву → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "7c594654-99e2-55b9-b281-7665fd55a7d3",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 422\", function () { pm.response.to.have.status(422); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });",
+                  "pm.test(\"Є список помилок полів\", function () { pm.expect(pm.response.json().errors).to.be.an(\"array\").that.is.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/categories/{{categoryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories",
+                "{{categoryId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Д\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Видалити категорію з товарами → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "692bd663-8ed4-5ae8-9c30-14810caa9be6",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 409\", function () { pm.response.to.have.status(409); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/categories/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Видалити порожню категорію",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "31d57d45-0011-5bd7-a8cf-7a30345ce0b8",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/categories/{{categoryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories",
+                "{{categoryId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": ""
+    },
+    {
+      "name": "4. Товари",
+      "item": [
+        {
+          "name": "Каталог: перша сторінка",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "89dadecd-a70b-5fad-8a86-b93148a73141",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"5 товарів і лічильники сторінок\", function () { const d = pm.response.json(); pm.expect(d.items.length).to.eql(5); pm.expect(d.size).to.eql(5); pm.expect(d.pages).to.eql(Math.ceil(d.total / 5)); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products?page=1&size=5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "size",
+                  "value": "5"
+                }
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Пошук «ноутбук» + порядок за ціною",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "b2fe8120-3f4a-5130-9fae-f4035e8b4c15",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Знайдено, ціни зростають\", function () { const p = pm.response.json().items.map(i => i.price); pm.expect(p.length).to.be.above(0); pm.expect(p).to.eql([...p].sort((a, b) => a - b)); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products?q=ноутбук&sort=price_asc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "ноутбук"
+                },
+                {
+                  "key": "sort",
+                  "value": "price_asc"
+                }
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Фільтр: категорія й діапазон цін",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "5f714eec-cc90-5cea-823e-5884820cc699",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Усе в межах\", function () { pm.response.json().items.forEach(i => { pm.expect(i.category_id).to.eql(2); pm.expect(i.price).to.be.within(5000, 20000); }); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products?category_id=2&min_price=5000&max_price=20000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "category_id",
+                  "value": "2"
+                },
+                {
+                  "key": "min_price",
+                  "value": "5000"
+                },
+                {
+                  "key": "max_price",
+                  "value": "20000"
+                }
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Невідомий порядок → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "053ebe5c-df8c-53c0-9200-7ece9ca9cd0a",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 422\", function () { pm.response.to.have.status(422); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });",
+                  "pm.test(\"Є список помилок полів\", function () { pm.expect(pm.response.json().errors).to.be.an(\"array\").that.is.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products?sort=random",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "random"
+                }
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Мінімальна ціна більша за максимальну → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "376e4ebd-8202-579e-a2c1-e4c27f212d85",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products?min_price=5000&max_price=100",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "min_price",
+                  "value": "5000"
+                },
+                {
+                  "key": "max_price",
+                  "value": "100"
+                }
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Один товар",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "3bdb079d-255f-5100-a667-76472017094f",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Той самий id\", function () { pm.expect(pm.response.json().id).to.eql(1); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Неіснуючий товар → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "d3bb8ea5-f99c-5c10-972f-be5903745378",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 404\", function () { pm.response.to.have.status(404); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/99999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "99999"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Новий товар (адмін)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "1ddda35d-a4fd-5d04-997e-ae8d22b407ef",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.collectionVariables.set(\"productId\", pm.response.json().id);",
+                  "pm.test(\"Заголовок Location веде на новий товар\", function () { pm.expect(pm.response.headers.get(\"Location\")).to.include(\"/api/v1/products/\" + pm.response.json().id); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_id\": 1,\n  \"name\": \"Тестовий ноутбук з Postman\",\n  \"price\": 19999,\n  \"description\": \"Створено через API\",\n  \"is_featured\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Новий товар без входу → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "49352ad1-e857-51b4-8dd2-70f7fe6b8640",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_id\": 1,\n  \"name\": \"Тестовий ноутбук з Postman\",\n  \"price\": 19999,\n  \"description\": \"Створено через API\",\n  \"is_featured\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Новий товар з помилками → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "57e108fe-e800-596d-add9-cac7e2c0984c",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 422\", function () { pm.response.to.have.status(422); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });",
+                  "pm.test(\"Є список помилок полів\", function () { pm.expect(pm.response.json().errors).to.be.an(\"array\").that.is.not.empty; });",
+                  "pm.test(\"Помилки для name і price\", function () { const f = pm.response.json().errors.map(e => e.field); pm.expect(f).to.include.members([\"name\", \"price\"]); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_id\": 1,\n  \"name\": \"ab\",\n  \"price\": -5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Неіснуюча категорія → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "37df2df2-11b3-59da-b462-ad62f82afc03",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 422\", function () { pm.response.to.have.status(422); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });",
+                  "pm.test(\"Є список помилок полів\", function () { pm.expect(pm.response.json().errors).to.be.an(\"array\").that.is.not.empty; });",
+                  "pm.test(\"Пояснення про категорію\", function () { pm.expect(pm.response.json().detail).to.include(\"Категорії\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_id\": 999,\n  \"name\": \"Тестовий ноутбук з Postman\",\n  \"price\": 19999,\n  \"description\": \"Створено через API\",\n  \"is_featured\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Змінити лише ціну (PATCH)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "ae57dc05-6633-57f7-a5f1-68b075713503",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Ціна нова, назва та сама\", function () { const p = pm.response.json(); pm.expect(p.price).to.eql(17999); pm.expect(p.name).to.eql(\"Тестовий ноутбук з Postman\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/{{productId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "{{productId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 17999\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Очистити назву значенням null → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "911dd26e-ddf8-54be-b7c8-0886dfafec7c",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 422\", function () { pm.response.to.have.status(422); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });",
+                  "pm.test(\"Є список помилок полів\", function () { pm.expect(pm.response.json().errors).to.be.an(\"array\").that.is.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/{{productId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "{{productId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Замінити товар повністю (PUT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "895fd428-8d82-5701-994f-63809677e781",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Опис став порожнім (не передали)\", function () { pm.expect(pm.response.json().description).to.eql(\"\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/{{productId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "{{productId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_id\": 1,\n  \"name\": \"Тестовий ноутбук (PUT)\",\n  \"price\": 18999\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PUT без обов'язкових полів → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "e01b3f18-2763-5649-a194-11ac202c1b37",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 422\", function () { pm.response.to.have.status(422); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });",
+                  "pm.test(\"Є список помилок полів\", function () { pm.expect(pm.response.json().errors).to.be.an(\"array\").that.is.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/{{productId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "{{productId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Лише назва\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Завантажити картинку",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "18f3c830-6f02-50bd-bf22-1bfc1b3f5b7a",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Адреса картинки в /media\", function () { pm.expect(pm.response.json().image_url).to.match(/^\\/media\\/products\\/.+\\.png$/); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/{{productId}}/image",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "{{productId}}",
+                "image"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "sample.png"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Завантажити без файлу → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "13327a8a-9cbd-5a8d-87e3-d35a272ceecb",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 422\", function () { pm.response.to.have.status(422); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });",
+                  "pm.test(\"Є список помилок полів\", function () { pm.expect(pm.response.json().errors).to.be.an(\"array\").that.is.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/{{productId}}/image",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "{{productId}}",
+                "image"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Прибрати картинку",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "f8c01a4c-63a5-5bf4-addf-f52b4f203cba",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/{{productId}}/image",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "{{productId}}",
+                "image"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Прибрати картинку неіснуючого товару → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "a9adb5eb-8d9f-5d7a-8e48-84965af93fcf",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 404\", function () { pm.response.to.have.status(404); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/99999/image",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "99999",
+                "image"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Читати каталог може будь-хто, змінювати — лише адміністратор. Картинка — multipart/form-data, поле file (файл sample.png поруч із колекцією)."
+    },
+    {
+      "name": "5. Відгуки",
+      "item": [
+        {
+          "name": "Відгуки про товар",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "97f119da-412e-5899-a92b-7fd4c3d6ee22",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Сторінка відгуків\", function () { pm.expect(pm.response.json().items).to.be.an(\"array\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/1/reviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "1",
+                "reviews"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Відгуки неіснуючого товару → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "b43a9685-d0b7-5095-a89d-501793e45072",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 404\", function () { pm.response.to.have.status(404); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/99999/reviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "99999",
+                "reviews"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Залишити відгук (клієнт)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "fe6bc1ae-acb9-5b8d-94cf-f66aeef2ed43",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.collectionVariables.set(\"reviewId\", pm.response.json().id);",
+                  "pm.test(\"Автор з профілю\", function () { pm.expect(pm.response.json().author_name).to.eql(\"Олена Коваль\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/{{productId}}/reviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "{{productId}}",
+                "reviews"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"text\": \"Відгук з Postman: усе працює.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Другий відгук про той самий товар → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "5a7e3209-fa49-5f63-aee3-069626d41578",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 409\", function () { pm.response.to.have.status(409); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/{{productId}}/reviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "{{productId}}",
+                "reviews"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 4,\n  \"text\": \"Ще один відгук.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Відгук з помилками → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "9faebf61-25f8-5d14-899c-492e67a25c69",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 422\", function () { pm.response.to.have.status(422); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });",
+                  "pm.test(\"Є список помилок полів\", function () { pm.expect(pm.response.json().errors).to.be.an(\"array\").that.is.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/{{productId}}/reviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "{{productId}}",
+                "reviews"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 7,\n  \"text\": \"ok\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Змінити свій відгук",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "2eda5fa5-3c64-565b-b14f-fe7b98475afe",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reviews/{{reviewId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reviews",
+                "{{reviewId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 4\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Змінити чужий відгук (адмін) → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "613c1595-1ac8-5f4c-b042-792ca6a891bc",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 403\", function () { pm.response.to.have.status(403); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reviews/{{reviewId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reviews",
+                "{{reviewId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Усі відгуки для модерації (адмін)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "35ed160c-67a4-5ebe-87eb-079a6e8d2801",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Є назва товару\", function () { pm.expect(pm.response.json().items[0]).to.have.property(\"product_name\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/reviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "reviews"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Видалити чужий відгук (інший клієнт) → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "b38e8385-1e91-5a58-a4bc-735c5181ef1b",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 403\", function () { pm.response.to.have.status(403); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reviews/{{reviewId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reviews",
+                "{{reviewId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Модерація від клієнта → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "2092bb21-a7fe-5018-96e4-2e03307d8b18",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 403\", function () { pm.response.to.have.status(403); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/reviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "reviews"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": ""
+    },
+    {
+      "name": "6. Список бажань",
+      "item": [
+        {
+          "name": "Додати товар до списку",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "b161745a-e662-5d72-9d17-cb88fbf309e7",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/me/wishlist/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me",
+                "wishlist",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Мій список бажань",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "b7e25a0d-9de7-58b3-a8c9-bbdd19112734",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Товар №1 у списку\", function () { pm.expect(pm.response.json().map(p => p.id)).to.include(1); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/me/wishlist",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me",
+                "wishlist"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Додати неіснуючий товар → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "0cbe21ea-4070-542c-9d83-816fbf29d0c3",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 404\", function () { pm.response.to.have.status(404); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/me/wishlist/99999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me",
+                "wishlist",
+                "99999"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Прибрати товар зі списку",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "014d9029-b244-58e2-9fc9-816b8ea46252",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/me/wishlist/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me",
+                "wishlist",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Список без входу → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "24fbb5f0-ff92-5a8a-b4b1-e86511089595",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/me/wishlist",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me",
+                "wishlist"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Прибрати зі списку без входу → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "80f25ada-ff3d-5976-bcf2-5ec1c29aa349",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/me/wishlist/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me",
+                "wishlist",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": ""
+    },
+    {
+      "name": "7. API v2",
+      "item": [
+        {
+          "name": "Каталог v2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "dbfec786-8e90-5f84-84ca-2793cd399557",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Категорія й рейтинг усередині товару\", function () { const p = pm.response.json().items[0]; pm.expect(p.category).to.have.keys(\"id\", \"name\"); pm.expect(p.rating).to.have.keys(\"average\", \"count\"); pm.expect(p).to.not.have.property(\"category_id\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/products?size=3",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "size",
+                  "value": "3"
+                }
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Товар v2 з рейтингом",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "a7540459-903e-5213-ad58-a76a79ad0a30",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Середня оцінка 4.5 з 2 відгуків\", function () { const r = pm.response.json().rating; pm.expect(r.count).to.be.at.least(2); pm.expect(r.average).to.be.a(\"number\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/products/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "products",
+                "1"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Неіснуючий товар v2 → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "517d04ed-6154-5f9a-9d6d-19caeaef84d8",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 404\", function () { pm.response.to.have.status(404); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/products/99999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "products",
+                "99999"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Каталог v2 з невідомим порядком → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "03949cf0-3d39-5c65-afd1-73f80f247f85",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 422\", function () { pm.response.to.have.status(422); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });",
+                  "pm.test(\"Є список помилок полів\", function () { pm.expect(pm.response.json().errors).to.be.an(\"array\").that.is.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/products?sort=random",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "random"
+                }
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": ""
+    },
+    {
+      "name": "8. Кошик і замовлення",
+      "item": [
+        {
+          "name": "Порахувати кошик",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "c060855b-985c-5489-b86e-df009d7a7306",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Сума за цінами з бази, неіснуючий товар у missing\", function () { const d = pm.response.json(); pm.expect(d.total).to.eql(32999 * 2 + 2199); pm.expect(d.missing).to.eql([99999]); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cart/preview",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "cart",
+                "preview"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"product_id\": 1,\n      \"quantity\": 2\n    },\n    {\n      \"product_id\": 13,\n      \"quantity\": 1\n    },\n    {\n      \"product_id\": 99999,\n      \"quantity\": 1\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Порожній кошик → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "b53a3669-7e98-59b3-ab04-f5fdeadd096b",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 422\", function () { pm.response.to.have.status(422); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });",
+                  "pm.test(\"Є список помилок полів\", function () { pm.expect(pm.response.json().errors).to.be.an(\"array\").that.is.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cart/preview",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "cart",
+                "preview"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Замовлення гостя",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "8695988a-acc7-5954-82f2-b89c5b6a1fb2",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Без акаунта, статус new\", function () { const o = pm.response.json(); pm.expect(o.user_id).to.eql(null); pm.expect(o.status).to.eql(\"new\"); pm.expect(o.total).to.eql(2199); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_name\": \"Петро Гість\",\n  \"phone\": \"+380672223344\",\n  \"email\": \"petro@example.com\",\n  \"address\": \"м. Рівне, відділення НП №3\",\n  \"items\": [\n    {\n      \"product_id\": 13,\n      \"quantity\": 1\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Замовлення клієнта",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "26b8f961-233c-5b3b-9f8f-21503cdf0da6",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.collectionVariables.set(\"orderId\", pm.response.json().id);",
+                  "pm.test(\"Прив'язане до акаунта\", function () { pm.expect(pm.response.json().user_id).to.eql(Number(pm.collectionVariables.get(\"clientId\"))); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_name\": \"Олена Коваль\",\n  \"phone\": \"+380501112233\",\n  \"email\": \"client@omnitech.example\",\n  \"address\": \"м. Луцьк, вул. Лесі Українки, 12\",\n  \"items\": [\n    {\n      \"product_id\": {{productId}},\n      \"quantity\": 1\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Замовлення з помилками → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "83ef417c-249d-5ccc-91da-5481702e1493",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 422\", function () { pm.response.to.have.status(422); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });",
+                  "pm.test(\"Є список помилок полів\", function () { pm.expect(pm.response.json().errors).to.be.an(\"array\").that.is.not.empty; });",
+                  "pm.test(\"Помилки для phone і address\", function () { const f = pm.response.json().errors.map(e => e.field); pm.expect(f).to.include.members([\"phone\", \"address\"]); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_name\": \"Петро\",\n  \"phone\": \"123\",\n  \"email\": \"petro@example.com\",\n  \"address\": \"Р\",\n  \"items\": [\n    {\n      \"product_id\": 1,\n      \"quantity\": 1\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Мої замовлення",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "d01a2658-6fd2-572e-9ce8-0893f0bbfc9f",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Найновіше — щойно створене\", function () { pm.expect(pm.response.json().items[0].id).to.eql(Number(pm.collectionVariables.get(\"orderId\"))); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/me/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me",
+                "orders"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Одне моє замовлення",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "e5933218-44b3-54e5-9260-35ec157b3077",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Є рядки замовлення\", function () { pm.expect(pm.response.json().items).to.have.lengthOf(1); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/me/orders/{{orderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me",
+                "orders",
+                "{{orderId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Мої замовлення без входу → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "fba84a61-14c9-5865-8df5-8f21ff65a80f",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/me/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me",
+                "orders"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Чуже замовлення (інший клієнт) → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "9cf35b95-b180-58c9-8a85-47cb74c662e7",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 404\", function () { pm.response.to.have.status(404); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });",
+                  "pm.test(\"Не підказуємо, що замовлення існує\", function () { pm.expect(pm.response.json().detail).to.eql(\"Замовлення не знайдено.\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/me/orders/{{orderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me",
+                "orders",
+                "{{orderId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Усі замовлення (адмін)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "2c0dc089-1bca-598b-ac08-fd3c542a272f",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/orders?status=new",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "new"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Усі замовлення від клієнта → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "797ad76b-e6d1-5b1f-8e3a-9d4bd64e6f85",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 403\", function () { pm.response.to.have.status(403); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "orders"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Одне замовлення (адмін)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "dff85417-3fda-58ad-ae51-dd8c2aea7934",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Те саме замовлення\", function () { pm.expect(pm.response.json().id).to.eql(Number(pm.collectionVariables.get(\"orderId\"))); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/orders/{{orderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "orders",
+                "{{orderId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Неіснуюче замовлення (адмін) → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "f2abfe29-56a0-59bb-bc8a-e54fad73ac89",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 404\", function () { pm.response.to.have.status(404); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/orders/99999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "orders",
+                "99999"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Змінити статус (адмін)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "4a365a43-08f2-5562-9fdf-794cd595267d",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Статус змінено\", function () { pm.expect(pm.response.json().status).to.eql(\"processing\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/orders/{{orderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "orders",
+                "{{orderId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"processing\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Невідомий статус → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "1926dd72-23c4-50d5-aee9-d36d849bd84f",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 422\", function () { pm.response.to.have.status(422); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });",
+                  "pm.test(\"Є список помилок полів\", function () { pm.expect(pm.response.json().errors).to.be.an(\"array\").that.is.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/orders/{{orderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "orders",
+                "{{orderId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"lost\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Видалити товар, який є в замовленні → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "2dbc7711-1a83-5e17-90ed-7437accced77",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 409\", function () { pm.response.to.have.status(409); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/{{productId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "{{productId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Кошик зберігає клієнт; сервер рахує суму лише за цінами з бази. Замовлення може оформити гість."
+    },
+    {
+      "name": "9. Зворотний зв'язок і статистика",
+      "item": [
+        {
+          "name": "Надіслати повідомлення",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "c56e09f6-cee0-5b50-95f4-ef1e8de809f0",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.collectionVariables.set(\"feedbackId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/feedback",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "feedback"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Іван\",\n  \"email\": \"ivan@example.com\",\n  \"message\": \"Коли буде знижка на ноутбуки?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Повідомлення з помилками → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "7f70163a-c7dd-5a07-a4b8-ee374d777b27",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 422\", function () { pm.response.to.have.status(422); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });",
+                  "pm.test(\"Є список помилок полів\", function () { pm.expect(pm.response.json().errors).to.be.an(\"array\").that.is.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/feedback",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "feedback"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"І\",\n  \"email\": \"x\",\n  \"message\": \"коротко\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Непрочитані повідомлення (адмін)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "9b512e8d-b8b8-5cd7-95d3-6d7e3c5a78b7",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/feedback?unread=true",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "feedback"
+              ],
+              "query": [
+                {
+                  "key": "unread",
+                  "value": "true"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Повідомлення без входу → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "f466b3b5-f56b-56c9-ae64-20f8d9b6f343",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/feedback",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "feedback"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Позначити прочитаним",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "f65024a2-21f3-5657-8b60-d9b1e4370c8d",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Прочитано\", function () { pm.expect(pm.response.json().is_read).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/feedback/{{feedbackId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "feedback",
+                "{{feedbackId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_read\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Позначка не true/false → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "f694caff-e281-5f6e-ab06-e548dc650ef3",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 422\", function () { pm.response.to.have.status(422); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });",
+                  "pm.test(\"Є список помилок полів\", function () { pm.expect(pm.response.json().errors).to.be.an(\"array\").that.is.not.empty; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/feedback/{{feedbackId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "feedback",
+                "{{feedbackId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_read\": \"так\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Статистика магазину",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "26f2f01e-552d-5705-8f53-fe772ff3a177",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Є всі статуси замовлень\", function () { pm.expect(pm.response.json().orders_by_status).to.have.keys(\"new\", \"processing\", \"shipped\", \"completed\", \"cancelled\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "stats"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Статистика від клієнта → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "7a94b6be-db29-5589-b1e1-21ab53387b9a",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 403\", function () { pm.response.to.have.status(403); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "stats"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": ""
+    },
+    {
+      "name": "10. Прибирання",
+      "item": [
+        {
+          "name": "Видалити свій відгук",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "49c81d01-1f91-59c8-996f-a33222fde0a8",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reviews/{{reviewId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reviews",
+                "{{reviewId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Видалити той самий відгук ще раз → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "4f329407-62ac-57ed-909d-fc83083a0e7c",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 404\", function () { pm.response.to.have.status(404); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reviews/{{reviewId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reviews",
+                "{{reviewId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{clientToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Видалити повідомлення (адмін)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "0870fa7f-a528-57ba-ac8d-992c6148f34a",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/feedback/{{feedbackId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "feedback",
+                "{{feedbackId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Видалити те саме повідомлення ще раз → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "aacc3a30-4727-5374-923f-7f95ff64f075",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 404\", function () { pm.response.to.have.status(404); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/feedback/{{feedbackId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "feedback",
+                "{{feedbackId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Видалити замовлення (адмін)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "b56f80d4-1307-5214-8026-5a6e4ac4eb16",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/orders/{{orderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "orders",
+                "{{orderId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Змінити статус видаленого замовлення → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "4c97a02e-99ae-5588-b0bf-48ff5374e473",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 404\", function () { pm.response.to.have.status(404); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/orders/{{orderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "orders",
+                "{{orderId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"completed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Видалити те саме замовлення ще раз → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "ad389831-da57-5a59-94e4-3e7b45ecde29",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 404\", function () { pm.response.to.have.status(404); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/orders/{{orderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "orders",
+                "{{orderId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Тепер товар можна видалити",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "42782dca-68c3-51df-81e5-bb6daf8fc70c",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/{{productId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "{{productId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Видалений товар → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "e02eeeac-30f6-5019-be44-d9f77758ea35",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 404\", function () { pm.response.to.have.status(404); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/{{productId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "{{productId}}"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Видалити свій акаунт (новий клієнт)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "61a8e0ad-7964-59b7-86f1-775e4e4e9169",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Токен видаленого акаунта → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "a8c8a19e-367e-5bbf-8fb8-f86bad2e0344",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Код відповіді 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"Відповідь у форматі JSON\", function () { pm.response.to.be.json; });",
+                  "pm.test(\"Помилка має поле detail\", function () { pm.expect(pm.response.json().detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Повертає базу до стану перед прогоном, тож колекцію можна запускати знову."
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "clientToken",
+      "value": ""
+    },
+    {
+      "key": "studentToken",
+      "value": ""
+    },
+    {
+      "key": "clientId",
+      "value": ""
+    },
+    {
+      "key": "newEmail",
+      "value": ""
+    },
+    {
+      "key": "runId",
+      "value": ""
+    },
+    {
+      "key": "categoryId",
+      "value": ""
+    },
+    {
+      "key": "productId",
+      "value": ""
+    },
+    {
+      "key": "reviewId",
+      "value": ""
+    },
+    {
+      "key": "orderId",
+      "value": ""
+    },
+    {
+      "key": "feedbackId",
+      "value": ""
+    }
+  ]
+}
