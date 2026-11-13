@@ -11,10 +11,12 @@ import argparse
 from app.db.base import Base
 from app.db.session import SessionLocal, engine, init_db
 from app.seed.users import seed_users
+from app.seed.catalog import seed_catalog
 
 # Порядок важливий: замовлення посилаються на товари й користувачів, тому вони останні
 SEEDERS = [
     seed_users,
+    seed_catalog,
 ]
 
 
