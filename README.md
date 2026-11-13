@@ -220,31 +220,31 @@ backend/
 
 **Помилка перевірки даних:** реєстрація з неправильними полями → 422, усі помилки разом (Назар):
 
-![422](lab-reports/screenshots/lab05-dmytruk-422.png)
+![422](lab-reports/screenshots/lab05-dmytruk-422.jpg)
 
 **Пошук у каталозі** в Postman: `?q=ноутбук&size=2` (Станіслав):
 
-![Пошук](lab-reports/screenshots/lab05-bardiuk-products.png)
+![Пошук](lab-reports/screenshots/lab05-bardiuk-products.jpg)
 
 **API v2:** категорія й рейтинг усередині товару (Станіслав):
 
-![v2](lab-reports/screenshots/lab05-bardiuk-v2.png)
+![v2](lab-reports/screenshots/lab05-bardiuk-v2.jpg)
 
 **Завантаження картинки** через `/docs` (Станіслав):
 
-![Картинка](lab-reports/screenshots/lab05-bardiuk-upload.png)
+![Картинка](lab-reports/screenshots/lab05-bardiuk-upload.jpg)
 
 **Замовлення гостя** в Postman: 201 (Андрій):
 
-![Замовлення](lab-reports/screenshots/lab05-makhniuk-order.png)
+![Замовлення](lab-reports/screenshots/lab05-makhniuk-order.jpg)
 
 **Видалення товару із замовлення** → 409 (Андрій):
 
-![409](lab-reports/screenshots/lab05-makhniuk-409.png)
+![409](lab-reports/screenshots/lab05-makhniuk-409.jpg)
 
 **Прогін усієї колекції** в Collection Runner (Андрій):
 
-![Runner](lab-reports/screenshots/lab05-makhniuk-runner.png)
+![Runner](lab-reports/screenshots/lab05-makhniuk-runner.jpg)
 
 ## Внесок учасників
 
