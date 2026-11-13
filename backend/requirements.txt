@@ -10,3 +10,4 @@ PyJWT==2.15.1
 pwdlib[argon2]==0.3.1
 # форми (вхід OAuth2 і завантаження файлів)
 python-multipart==0.0.33
+pillow==13.0.0
