@@ -1,0 +1,12 @@
+# Бібліотеки бекенду. Встановлення: pip install -r requirements.txt
+# Версії зафіксовані, щоб у всіх учасників працювало однаково
+fastapi==0.162.0
+uvicorn==0.54.0
+SQLAlchemy==2.1.8
+pydantic==2.14.3
+pydantic-settings==2.16.2
+email-validator==2.3.0
+PyJWT==2.15.1
+pwdlib[argon2]==0.3.1
+# форми (вхід OAuth2 і завантаження файлів)
+python-multipart==0.0.33
