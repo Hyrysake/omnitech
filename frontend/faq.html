@@ -15,7 +15,59 @@
   <!-- Шапку й підвал малює JavaScript (src/layout). Висота шапки зарезервована, щоб сторінка не «стрибала» -->
   <div id="site-header" class="min-h-[65px]"></div>
   <main id="main" tabindex="-1" class="frame flex-grow pb-24 pt-6 outline-none md:pt-8">
-    <div class="card flex flex-col items-center px-6 py-14 text-center"><span class="grid size-16 place-items-center rounded-full bg-gold/10 text-gold dark:bg-gold-bright/15 dark:text-gold-bright"><i class="ph ph-hammer text-3xl" aria-hidden="true"></i></span><h1 class="mt-6 font-display text-3xl font-semibold">Сторінка в розробці</h1><p class="muted mt-3 max-w-md">Ця сторінка ще в розробці. Її замінить автор частини у своєму Pull Request: до того часу тут тимчасова заглушка, щоб меню й посилання працювали.</p></div>
+    <header class="section-head page-head">
+      <h1 class="lockup lockup-sm" data-reveal><span class="serif">Відповіді на все</span><span class="sans">Часті питання</span></h1>
+      <p class="side" data-reveal>Доставка, оплата, гарантія і повернення. Не знайшли відповіді?
+        <a href="/contacts.html#feedback" class="link wipe mt-3 inline-block">Напишіть нам</a></p>
+    </header>
+
+    <div class="faq-wrap grid grid-cols-1 lg:grid-cols-4">
+      <!-- <details> і <summary> — вбудований у HTML «акордеон»: відповідь розгортається по кліку без JavaScript -->
+      <div class="faq-list lg:col-span-3 lg:col-start-2">
+        <details class="faq-item group">
+          <summary>
+            <span><span class="faq-n">01</span>Скільки триває доставка?</span>
+            <span class="pm-wrap"><span class="pm" aria-hidden="true"></span></span>
+          </summary>
+          <p>Доставка Новою поштою займає 1-2 дні. По Луцьку працює кур'єр: замовлення, оформлене до 14:00, привеземо того ж дня.</p>
+        </details>
+        <details class="faq-item group">
+          <summary>
+            <span><span class="faq-n">02</span>Які способи оплати ви приймаєте?</span>
+            <span class="pm-wrap"><span class="pm" aria-hidden="true"></span></span>
+          </summary>
+          <p>Карткою на сайті, накладеним платежем у відділенні Нової пошти або готівкою чи карткою в нашому магазині.</p>
+        </details>
+        <details class="faq-item group">
+          <summary>
+            <span><span class="faq-n">03</span>Чи є гарантія на техніку?</span>
+            <span class="pm-wrap"><span class="pm" aria-hidden="true"></span></span>
+          </summary>
+          <p>Так. Уся техніка має офіційну гарантію виробника від 12 місяців. Гарантійний талон видаємо разом із товаром.</p>
+        </details>
+        <details class="faq-item group">
+          <summary>
+            <span><span class="faq-n">04</span>Чи можна повернути товар?</span>
+            <span class="pm-wrap"><span class="pm" aria-hidden="true"></span></span>
+          </summary>
+          <p>Так, протягом 14 днів після покупки, якщо товар не був у використанні і збережено упаковку та чек.</p>
+        </details>
+        <details class="faq-item group">
+          <summary>
+            <span><span class="faq-n">05</span>Чи можна забрати замовлення самостійно?</span>
+            <span class="pm-wrap"><span class="pm" aria-hidden="true"></span></span>
+          </summary>
+          <p>Так. Під час оформлення напишіть в адресі «Самовивіз», і ми повідомимо, коли замовлення буде готове до видачі в магазині.</p>
+        </details>
+        <details class="faq-item group">
+          <summary>
+            <span><span class="faq-n">06</span>Чи допоможете налаштувати новий пристрій?</span>
+            <span class="pm-wrap"><span class="pm" aria-hidden="true"></span></span>
+          </summary>
+          <p>Так. Під час видачі консультант безкоштовно перенесе дані зі старого телефона та налаштує основні програми.</p>
+        </details>
+      </div>
+    </div>
   </main>
   <div id="site-footer"></div>
   <noscript>

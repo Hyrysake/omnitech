@@ -15,7 +15,105 @@
   <!-- Шапку й підвал малює JavaScript (src/layout). Висота шапки зарезервована, щоб сторінка не «стрибала» -->
   <div id="site-header" class="min-h-[65px]"></div>
   <main id="main" tabindex="-1" class="frame flex-grow pb-24 pt-6 outline-none md:pt-8">
-    <div class="card flex flex-col items-center px-6 py-14 text-center"><span class="grid size-16 place-items-center rounded-full bg-gold/10 text-gold dark:bg-gold-bright/15 dark:text-gold-bright"><i class="ph ph-hammer text-3xl" aria-hidden="true"></i></span><h1 class="mt-6 font-display text-3xl font-semibold">Сторінка в розробці</h1><p class="muted mt-3 max-w-md">Ця сторінка ще в розробці. Її замінить автор частини у своєму Pull Request: до того часу тут тимчасова заглушка, щоб меню й посилання працювали.</p></div>
+    <header class="section-head page-head">
+      <h1 class="lockup lockup-sm" data-reveal><span class="serif">Магазин, який пояснює</span><span class="sans">Про нас</span></h1>
+      <p class="side" data-reveal>Магазин електроніки, де пояснюють різницю між моделями простими словами.</p>
+    </header>
+
+    <section class="mt-12 grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-14">
+      <!-- Ілюстрація майстерні: золоті лінії (той самий стиль, що й ілюстрації товарів). Без зовнішніх фото:
+           сторінка не завантажує нічого з інших сайтів. data-draw — лінії «малюються», коли блок з'являється в екрані -->
+      <div class="illo workshop aspect-[4/3] w-full overflow-hidden rounded-3xl lg:col-span-7" role="img"
+           aria-label="Ілюстрація: верстак майстерні — монітор на діагностиці, відкритий ноутбук, інструменти, телефон і лампа" data-draw>
+        <svg viewBox="0 0 480 360" aria-hidden="true" focusable="false">
+          <rect x="40" y="56" width="112" height="76" rx="5" class="dr soft" pathLength="1" style="--d: 0"/>
+          <path d="M64 66 V96" class="dr" pathLength="1" style="--d: 1"/>
+          <rect x="59" y="96" width="10" height="22" rx="4" class="dr" pathLength="1" style="--d: 2"/>
+          <circle cx="96" cy="76" r="8" class="dr" pathLength="1" style="--d: 3"/>
+          <path d="M96 84 V118" class="dr" pathLength="1" style="--d: 4"/>
+          <path d="M124 68 L120 116 M130 68 L134 116" class="dr" pathLength="1" style="--d: 5"/>
+          <rect x="20" y="262" width="440" height="14" rx="3" class="dr" pathLength="1" style="--d: 6"/>
+          <rect x="36" y="276" width="12" height="70" rx="2" class="dr" pathLength="1" style="--d: 7"/>
+          <rect x="340" y="276" width="104" height="70" rx="3" class="dr" pathLength="1" style="--d: 8"/>
+          <path d="M340 299 H444 M340 322 H444" class="dr" pathLength="1" style="--d: 9"/>
+          <path d="M384 288 H400 M384 311 H400 M384 334 H400" class="dr" pathLength="1" style="--d: 10"/>
+          <path d="M8 346 H472" class="dr soft" pathLength="1" style="--d: 11"/>
+          <path d="M58 262 L68 244 H142 L152 262 Z" class="dr" pathLength="1" style="--d: 12"/>
+          <path d="M72 244 L60 188 H128 L140 244 Z" class="dr" pathLength="1" style="--d: 13"/>
+          <path d="M72 234 L64 196 H124 L132 234 Z" class="dr soft" pathLength="1" style="--d: 14"/>
+          <rect x="150" y="118" width="172" height="114" rx="8" class="dr" pathLength="1" style="--d: 15"/>
+          <rect x="162" y="130" width="148" height="90" rx="3" class="dr soft" pathLength="1" style="--d: 16"/>
+          <path d="M172 190 H196 L206 164 L218 208 L230 176 L240 190 H298" class="dr" pathLength="1" style="--d: 17"/>
+          <path d="M222 232 H250 L256 250 H216 Z" class="dr" pathLength="1" style="--d: 18"/>
+          <rect x="198" y="250" width="76" height="12" rx="3" class="dr" pathLength="1" style="--d: 19"/>
+          <rect x="160" y="252" width="16" height="10" rx="2" class="dr soft" pathLength="1" style="--d: 20"/>
+          <circle cx="186" cy="257" r="3.5" class="dr soft" pathLength="1" style="--d: 21"/>
+          <rect x="284" y="250" width="26" height="10" rx="5" class="dr" pathLength="1" style="--d: 22"/>
+          <path d="M310 255 H334" class="dr" pathLength="1" style="--d: 23"/>
+          <rect x="356" y="196" width="34" height="62" rx="7" class="dr" pathLength="1" style="--d: 24"/>
+          <rect x="361" y="204" width="24" height="44" rx="3" class="dr soft" pathLength="1" style="--d: 25"/>
+          <path d="M352 262 L362 250 M394 262 L384 250" class="dr" pathLength="1" style="--d: 26"/>
+          <rect x="414" y="254" width="40" height="8" rx="3" class="dr" pathLength="1" style="--d: 27"/>
+          <path d="M434 254 L420 184 L450 142" class="dr" pathLength="1" style="--d: 28"/>
+          <circle cx="420" cy="184" r="5" class="dr" pathLength="1" style="--d: 29"/>
+          <path d="M438 126 L474 142 L458 166 Z" class="dr" pathLength="1" style="--d: 30"/>
+          <path d="M452 172 L446 186 M462 170 L464 186" class="dr soft" pathLength="1" style="--d: 31"/>
+        </svg>
+      </div>
+      <div class="lg:col-span-5">
+        <h2 class="font-display text-4xl font-semibold tracking-tight">З майстерні до магазину</h2>
+        <p class="muted mt-5 text-lg leading-relaxed">
+          OmniTech почався з маленької майстерні, де ремонтували ноутбуки сусідам.
+          Згодом клієнти почали просити порадити нову техніку, і так з'явився магазин.
+        </p>
+        <p class="muted mt-4 text-lg leading-relaxed">Ми продаємо те, що перевірили самі, і не нав'язуємо дорожчу модель, якщо вистачить простішої.</p>
+      </div>
+    </section>
+
+    <section class="mt-20 md:mt-28">
+      <h2 class="font-display text-4xl font-semibold tracking-tight sm:text-5xl">Наші цінності</h2>
+      <div class="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div class="card p-6">
+          <span class="grid size-12 place-items-center rounded-full bg-gold/10 text-gold dark:bg-gold-bright/15 dark:text-gold-bright"><i class="ph ph-tag text-2xl" aria-hidden="true"></i></span>
+          <h3 class="mt-5 text-lg font-semibold">Чесні ціни</h3>
+          <p class="muted mt-2 leading-relaxed">Ціна на сайті й у магазині однакова, без прихованих доплат.</p>
+        </div>
+        <div class="card p-6">
+          <span class="grid size-12 place-items-center rounded-full bg-gold/10 text-gold dark:bg-gold-bright/15 dark:text-gold-bright"><i class="ph ph-magnifying-glass text-2xl" aria-hidden="true"></i></span>
+          <h3 class="mt-5 text-lg font-semibold">Перевірена техніка</h3>
+          <p class="muted mt-2 leading-relaxed">Кожну модель ми тестуємо до того, як додати її в каталог.</p>
+        </div>
+        <div class="card p-6">
+          <span class="grid size-12 place-items-center rounded-full bg-gold/10 text-gold dark:bg-gold-bright/15 dark:text-gold-bright"><i class="ph ph-handshake text-2xl" aria-hidden="true"></i></span>
+          <h3 class="mt-5 text-lg font-semibold">Підтримка після покупки</h3>
+          <p class="muted mt-2 leading-relaxed">Допомагаємо з налаштуванням і гарантійними питаннями.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-20 md:mt-28">
+      <h2 class="font-display text-4xl font-semibold tracking-tight sm:text-5xl">Команда проєкту</h2>
+      <div class="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div class="card p-6">
+          <span class="grid size-14 place-items-center rounded-full bg-coal font-display text-xl font-semibold text-gold-bright dark:bg-paper dark:text-gold">НД</span>
+          <h3 class="mt-5 text-lg font-semibold">Назар Дмитрук</h3>
+          <p class="text-sm font-medium text-gold dark:text-gold-bright">Team Lead</p>
+          <p class="muted mt-3 leading-relaxed">Ядро API та сайту, каталог, сторінка товару, відгуки й список бажань.</p>
+        </div>
+        <div class="card p-6">
+          <span class="grid size-14 place-items-center rounded-full bg-coal font-display text-xl font-semibold text-gold-bright dark:bg-paper dark:text-gold">АМ</span>
+          <h3 class="mt-5 text-lg font-semibold">Андрій Махнюк</h3>
+          <p class="text-sm font-medium text-gold dark:text-gold-bright">Developer</p>
+          <p class="muted mt-3 leading-relaxed">Кошик, оформлення й історія замовлень, сторінки «Про нас» і «Контакти».</p>
+        </div>
+        <div class="card p-6">
+          <span class="grid size-14 place-items-center rounded-full bg-coal font-display text-xl font-semibold text-gold-bright dark:bg-paper dark:text-gold">СБ</span>
+          <h3 class="mt-5 text-lg font-semibold">Станіслав Бардюк</h3>
+          <p class="text-sm font-medium text-gold dark:text-gold-bright">QA</p>
+          <p class="muted mt-3 leading-relaxed">Вхід, реєстрація й профіль, адмін-панель товарів і категорій.</p>
+        </div>
+      </div>
+    </section>
   </main>
   <div id="site-footer"></div>
   <noscript>
