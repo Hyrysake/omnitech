@@ -1,0 +1,322 @@
+/* Стилі всього сайту. Файл підключає кожна HTML-сторінка в <head> тегом <link>,
+   тому стилі є ще до запуску JavaScript і сторінка не «блимає» без оформлення. */
+
+/* Шрифти й іконки встановлено через npm (npm ci), а не беруться з чужих серверів (CDN):
+   сайт однаково виглядає і без інтернету, а версії зафіксовано в package-lock.json.
+   Обидва шрифти мають кирилицю. */
+@import "@fontsource/montserrat/400.css";
+@import "@fontsource/montserrat/500.css";
+@import "@fontsource/montserrat/600.css";
+@import "@fontsource/montserrat/700.css";
+@import "@fontsource/montserrat/800.css";
+@import "@fontsource/cormorant/300.css";
+@import "@fontsource/cormorant/500.css";
+@import "@fontsource/cormorant/600.css";
+@import "@fontsource/cormorant/500-italic.css";
+@import "@fontsource/cormorant/600-italic.css";
+/* Іконки Phosphor: <i class="ph ph-truck"></i> — контурна, <i class="ph-fill ph-star"></i> — заповнена.
+   Підключено лише ті значки, що є на сайті (icons.css), а не всю бібліотеку на 200 КБ */
+@import "./icons.css";
+/* Новий дизайн (лаб. 06): оболонка, головна, каталог, рух. Окремий файл, щоб main.css лишався коротким */
+@import "./site.css";
+/* Решта сторінок у тій самій мові (заголовки, картки, форми, кнопки); адмін-панель не змінюється */
+@import "./pages.css";
+
+@import "tailwindcss";
+
+/* Дизайн-система як «токени» (та сама, що в Lab 04): у класах пишемо bg-paper або text-gold,
+   а не шістнадцяткові коди. Щоб змінити колір на всьому сайті, досить змінити його тут. */
+@theme {
+  --font-display: "Cormorant", ui-serif, Georgia, serif;
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+
+  --color-paper: #FAF7F0;        /* фон сторінки у світлій темі: теплий кремовий */
+  --color-card: #FFFFFF;         /* фон карток */
+  --color-ink: #0C0A09;          /* основний текст; фон у темній темі */
+  --color-coal: #1C1917;         /* темні блоки, картки в темній темі */
+  --color-graphite: #44403C;     /* пункти меню */
+  --color-muted: #57534E;        /* приглушений текст у світлій темі */
+  --color-muted-dark: #A8A29E;   /* приглушений текст у темній темі */
+  --color-line: #D9D2C4;         /* рамки у світлій темі */
+  --color-line-dark: #292524;    /* рамки у темній темі */
+  --color-gold: #A16207;         /* акцент: кнопки, іконки (білий текст на ньому читається, 4.9:1) */
+  --color-gold-bright: #CA8A04;  /* той самий акцент, світліший, для темної теми */
+  --color-gold-loud: #E2AD3A;    /* «гучне» золото: великі кнопки й акценти, текст на ньому лише чорний */
+  --color-cream: #EFE7D6;        /* кремова смуга (інверсний блок у темній темі) */
+}
+
+/* Темна тема вмикається класом .dark на <html> (його ставить скрипт у <head> кожної сторінки).
+   Без цього правила варіант dark: реагував би лише на тему операційної системи. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Діє, коли в системі ввімкнено «Зменшити прозорість»: «скляне» меню стає непрозорим */
+@custom-variant reduced-transparency (@media (prefers-reduced-transparency: reduce));
+
+/* Повторювані елементи описані один раз: у розмітці пишемо class="btn btn-primary".
+   min-h-11 = 44 px — мінімальний зручний розмір цілі для пальця. */
+@layer components {
+  .btn {
+    @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-2 text-sm font-semibold transition duration-200 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply bg-gold text-white hover:bg-yellow-800 dark:bg-gold-bright dark:text-ink dark:hover:bg-yellow-500;
+  }
+  .btn-secondary {
+    @apply border border-line bg-card text-ink hover:bg-stone-100 dark:border-line-dark dark:bg-coal dark:text-paper dark:hover:bg-graphite;
+  }
+  .btn-danger {
+    @apply border border-red-300 bg-card text-red-700 hover:bg-red-50 dark:border-red-900 dark:bg-coal dark:text-red-400 dark:hover:bg-red-950;
+  }
+  /* Кнопка-іконка 44×44 (серце, хрестик тощо) */
+  .btn-icon {
+    @apply grid size-11 shrink-0 cursor-pointer place-items-center rounded-xl text-graphite transition-colors duration-200 hover:bg-coal/5 disabled:cursor-not-allowed disabled:opacity-50 dark:text-stone-300 dark:hover:bg-white/10;
+  }
+  /* Поле форми: шрифт 16 px не дає iPhone збільшувати сторінку при фокусі */
+  .input {
+    @apply block min-h-11 w-full rounded-xl border border-line bg-card px-4 py-2 text-base text-ink placeholder:text-muted/60 aria-[invalid=true]:border-red-600 dark:border-line-dark dark:bg-coal dark:text-paper dark:placeholder:text-muted-dark/60 dark:aria-[invalid=true]:border-red-500;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium;
+  }
+  /* Текст помилки під полем форми */
+  .field-error {
+    @apply mt-1.5 flex items-start gap-1.5 text-sm text-red-700 dark:text-red-400;
+  }
+  .hint {
+    @apply mt-1.5 text-sm text-muted dark:text-muted-dark;
+  }
+  .card {
+    @apply rounded-2xl border border-line bg-card dark:border-line-dark dark:bg-coal;
+  }
+  /* Повідомлення в рамці над формою чи списком */
+  .alert {
+    @apply flex items-start gap-3 rounded-xl border-l-4 px-4 py-3;
+  }
+  .alert-error {
+    @apply border-red-600 bg-red-50 text-red-900 dark:bg-red-950/50 dark:text-red-100;
+  }
+  .alert-success {
+    @apply border-emerald-600 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-100;
+  }
+  .alert-info {
+    @apply border-gold bg-amber-50 text-amber-950 dark:border-gold-bright dark:bg-amber-950/40 dark:text-amber-50;
+  }
+  .page-title {
+    @apply font-display text-5xl font-semibold tracking-tight sm:text-6xl;
+  }
+  .section-title {
+    @apply font-display text-3xl font-semibold tracking-tight sm:text-4xl;
+  }
+  .muted {
+    @apply text-muted dark:text-muted-dark;
+  }
+  .link {
+    @apply font-semibold text-gold underline-offset-4 hover:underline dark:text-gold-bright;
+  }
+  /* Сіра «заготовка» на місці вмісту, поки він завантажується */
+  .skeleton {
+    @apply animate-pulse rounded-xl bg-stone-200 dark:bg-stone-800;
+  }
+  /* Таблиці адмін-панелі: прокручуються всередині картки на вузькому екрані */
+  .table-wrap {
+    @apply relative overflow-x-auto rounded-2xl border border-line bg-card dark:border-line-dark dark:bg-coal;
+  }
+  .data-table {
+    @apply w-full text-left text-sm;
+  }
+  .data-table th {
+    @apply px-3 py-3 text-xs font-semibold uppercase tracking-wider whitespace-nowrap text-muted sm:px-4 dark:text-muted-dark;
+  }
+  .data-table td {
+    @apply px-3 py-3 align-middle sm:px-4;
+  }
+  .data-table tbody tr {
+    @apply border-t border-line dark:border-line-dark;
+  }
+}
+
+/* Браузер малює смуги прокрутки й елементи форм у кольорах поточної теми */
+html { color-scheme: light; scroll-padding-top: 6rem; }
+html.dark { color-scheme: dark; }
+
+/* Золота рамка навколо елемента, до якого перейшли клавішею Tab */
+:focus-visible {
+  outline: 2px solid #A16207;
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+/* На телефоні браузер не чекає 300 мс (чи це не подвійний дотик), а одразу реагує */
+a, button, summary, label { touch-action: manipulation; }
+
+/* Атрибут hidden завжди ховає елемент, навіть якщо його класи (flex, grid) кажуть інше */
+[hidden] { display: none !important; }
+
+/* Анімації — лише коли користувач не просив їх зменшити (налаштування «Зменшити рух») */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+
+  /* Поява блоку; --i — номер елемента, кожен наступний з'являється на 60 мс пізніше */
+  .reveal {
+    animation: rise 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+    animation-delay: calc(var(--i, 0) * 60ms);
+  }
+
+  .animate-slide-down { animation: slide-down 0.3s ease-out both; }
+  .animate-toast { animation: rise 0.3s ease-out both; }
+}
+
+/* Анімуються лише прозорість і зсув (transform): браузер робить це без перерахунку сторінки */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ================= Редизайн (лабораторна 06): лінія прокручування, меню-оверлей, великі літери ================= */
+
+/* Перехід між сторінками: браузер плавно змінює стару сторінку на нову (Chrome і Edge).
+   В інших браузерах правило ігнорується, і сайт просто переходить на нову сторінку. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+}
+
+/* Золота лінія вгорі: показує, скільки сторінки вже прокручено.
+   У сучасних браузерах її ширину рахує сам CSS (animation-timeline), в інших — скрипт ставить змінну --p */
+.scroll-line {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 60;
+  height: 2px;
+  background: var(--color-gold);
+  transform-origin: 0 50%;
+  transform: scaleX(var(--p, 0));
+  pointer-events: none;
+}
+.dark .scroll-line { background: var(--color-gold-bright); }
+@supports (animation-timeline: scroll()) {
+  .scroll-line {
+    transform: scaleX(0);
+    animation: grow-line linear both;
+    animation-timeline: scroll(root block);
+  }
+}
+@keyframes grow-line { to { transform: scaleX(1); } }
+
+/* Лічильник 0 → 100 у куті: з'являється лише при першому заході за сесію і не закриває вміст */
+.load-counter {
+  position: fixed;
+  left: 1rem;
+  bottom: 0.5rem;
+  z-index: 55;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 12vw, 7rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-gold);
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.dark .load-counter { color: var(--color-gold-bright); }
+.load-counter[data-done] { opacity: 0; }
+
+/* Лінії-«контури» на тлі, як на карті висот. Малює їх скрипт (layout/effects.js), тут — лише вигляд.
+   Колір окремий для кожної теми, щоб лінії були ледь помітні й не заважали читати текст */
+.contour-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  color: var(--color-gold);
+  opacity: 0.22;
+  pointer-events: none;
+}
+.dark .contour-bg { color: var(--color-gold-bright); opacity: 0.16; }
+.contour-bg path, .contour-bg ellipse {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .contour-bg path, .contour-bg ellipse {
+    stroke-dasharray: 3200;
+    stroke-dashoffset: 3200;
+    animation: draw-line 2.6s ease-out forwards;
+    animation-delay: calc(var(--n, 0) * 120ms);
+  }
+}
+@keyframes draw-line { to { stroke-dashoffset: 0; } }
+
+/* Хрестики «+» у кутах блоків і тонкі риски: мотив сітки з референсів */
+.cross { position: relative; display: inline-block; width: 13px; height: 13px; color: var(--color-graphite); }
+.dark .cross { color: var(--color-muted-dark); }
+.cross::before, .cross::after { content: ""; position: absolute; background: currentColor; }
+.cross::before { left: 0; right: 0; top: 6px; height: 1px; }
+.cross::after { top: 0; bottom: 0; left: 6px; width: 1px; }
+
+/* Велике слово-вивіска: обрізається знизу контейнером з overflow-hidden */
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: min(16.5vw, 16rem);
+  line-height: 0.8;
+  letter-spacing: -0.035em;
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* Меню-оверлей: елемент <dialog> відкривається на весь екран методом showModal(). Браузер сам
+   тримає фокус усередині, закриває його клавішею Esc і робить решту сторінки неактивною */
+.menu-overlay {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  border: 0;
+  color: var(--color-ink);
+  background: var(--color-paper);
+}
+.dark .menu-overlay { color: var(--color-paper); background: var(--color-ink); }
+.menu-overlay::backdrop { background: transparent; }
+html:has(.menu-overlay[open]) { overflow: hidden; }
+.menu-link {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 7.5vw, 5rem);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  transition: color 0.2s ease, transform 0.25s ease;
+}
+.menu-link .num { font-family: var(--font-sans); font-size: 0.8rem; font-weight: 500; letter-spacing: 0.08em; color: var(--color-gold); }
+.dark .menu-link .num { color: var(--color-gold-bright); }
+.menu-link:hover, .menu-link:focus-visible { color: var(--color-gold); }
+.dark .menu-link:hover, .dark .menu-link:focus-visible { color: var(--color-gold-bright); }
+.menu-link[aria-current="page"] { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 0.12em; }
+@media (prefers-reduced-motion: no-preference) {
+  .menu-link:hover, .menu-link:focus-visible { transform: translateX(0.75rem); }
+}
+@keyframes menu-in { from { opacity: 0; clip-path: inset(0 0 100% 0); } to { opacity: 1; clip-path: inset(0); } }
+
+/* Тонка сітка-лінійка в шапці й блоках: вертикальні риски через рівні проміжки */
+.ticks {
+  background-image: linear-gradient(to right, var(--color-line) 1px, transparent 1px);
+  background-size: 25% 100%;
+}
+.dark .ticks { background-image: linear-gradient(to right, var(--color-line-dark) 1px, transparent 1px); }
+
+/* Горизонтальна стрічка з прив'язкою до карток: гортається пальцем і стрілками клавіатури */
+.strip { display: flex; gap: 1.25rem; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 1rem; }
+.strip > * { flex: 0 0 min(80vw, 18rem); scroll-snap-align: start; }
+/* Повідомлення («порожньо», «помилка») у стрічці займає всю її ширину, а не ширину однієї картки */
+.strip > .col-span-full { flex: 1 0 100%; }

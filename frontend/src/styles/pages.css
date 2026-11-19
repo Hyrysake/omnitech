@@ -1,0 +1,169 @@
+/* ============================================================================================
+   Решта сторінок у мові нового дизайну (лабораторна 06, сесія B): заголовок «засічковий над жирним»,
+   тонкі лінії замість товстих рамок, золото як єдиний акцент, щедрі відступи.
+   Усе діє лише поза адмін-панеллю (html[data-mode="admin"] лишається зі старим виглядом),
+   тому кожне правило починається з html:not([data-mode="admin"]).
+   Колір і шрифти беремо зі змінних site.css (--hair, --accent, --fg…), тож тема перемикається сама.
+   ============================================================================================ */
+
+html:not([data-mode="admin"]) {
+  --surface: #fff;
+  --surface-2: #F4EFE4;   /* трохи темніша за картку «підкладка» (фон іконок, рядків) */
+  --serif: var(--font-display);
+}
+html.dark:not([data-mode="admin"]) {
+  --surface: #1A1816;
+  --surface-2: #26221F;
+}
+
+/* ----------------------------- Шапка сторінки (lockup + підпис, нижня тонка лінія) ----------------------------- */
+html:not([data-mode="admin"]) .page-head {
+  padding-top: clamp(.75rem, 3vh, 2rem);
+  padding-bottom: clamp(1.5rem, 4vh, 3rem);
+  margin-bottom: clamp(1.75rem, 4vh, 3.5rem);
+  border-bottom: 1px solid var(--hair);
+}
+/* ≥ 24 px: великий текст, тому контраст золота на кремовому достатній і на телефоні */
+html:not([data-mode="admin"]) .page-head .lockup .serif { font-size: clamp(1.5rem, 2.6vw, 2.6rem); }
+html:not([data-mode="admin"]) .page-head .lockup .sans { font-size: clamp(2rem, 5.4vw, 5.5rem); margin-top: .1em; }
+html:not([data-mode="admin"]) .page-head .side { font-size: 1rem; }
+@media (min-width: 1024px) {
+  html:not([data-mode="admin"]) .page-head .lockup { grid-column: 1 / 4; }
+  html:not([data-mode="admin"]) .page-head .side { grid-column: 4; align-self: end; }
+}
+/* Довгий заголовок (Оформлення замовлення): трохи менший, щоб не займав пів екрана */
+html:not([data-mode="admin"]) .page-head.is-long .lockup .sans { font-size: clamp(1.9rem, 4.2vw, 4.2rem); }
+/* Варіант без підпису: заголовок займає всі колонки */
+html:not([data-mode="admin"]) .page-head.is-solo .lockup { grid-column: 1 / -1; }
+
+/* Заголовок блоку всередині сторінки (менший за h1, той самий lockup) */
+html:not([data-mode="admin"]) .block-lockup .serif { font-size: clamp(1.5rem, 2vw, 2rem); }
+html:not([data-mode="admin"]) .block-lockup .sans { font-size: clamp(1.75rem, 3.4vw, 3.4rem); margin-top: .1em; }
+
+/* Дрібний «навігаційний» рядок над заголовком (назад до кошика тощо) */
+html:not([data-mode="admin"]) .back-link {
+  display: inline-flex; align-items: center; gap: .5rem; min-height: 2.75rem;
+  font-size: .75rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--fg-muted);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+html:not([data-mode="admin"]) .back-link:hover { color: var(--accent); }
+
+/* ----------------------------- Картки, поля, повідомлення ----------------------------- */
+html:not([data-mode="admin"]) .card {
+  border-radius: 4px; border: 1px solid var(--hair); background: var(--surface);
+  transition: border-color var(--dur) var(--ease-out);
+}
+html:not([data-mode="admin"]) a.card:hover, html:not([data-mode="admin"]) .card:focus-within { border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+html:not([data-mode="admin"]) .alert { border-radius: 4px; }
+
+html:not([data-mode="admin"]) .label {
+  font-size: .75rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-muted);
+}
+html:not([data-mode="admin"]) .input {
+  border-radius: 4px; border-color: color-mix(in srgb, var(--fg) 24%, transparent); background: var(--surface);
+  transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+html:not([data-mode="admin"]) .input:hover { border-color: color-mix(in srgb, var(--fg) 50%, transparent); }
+html:not([data-mode="admin"]) .input:focus { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); outline: none; }
+html:not([data-mode="admin"]) .input[aria-invalid="true"] { border-color: #B91C1C; }
+
+/* Заголовки блоків усередині карток і секцій: Cormorant, як на решті сайту */
+html:not([data-mode="admin"]) .block-title { font-family: var(--serif); font-weight: 600; font-size: clamp(1.6rem, 2.2vw, 2.1rem); line-height: 1.1; letter-spacing: -.005em; }
+html:not([data-mode="admin"]) .price { font-family: var(--serif); font-weight: 600; font-variant-numeric: lining-nums tabular-nums; letter-spacing: -.005em; }
+
+/* ----------------------------- Кнопки: заливка «виїжджає» знизу (slide-up) -----------------------------
+   Кнопка стає контекстом накладання, заливка ::before лежить під текстом. Лише на пристроях із наведенням.
+   Колір тексту на заливці міняємо разом з нею, щоб контраст лишався (чорний на золоті, світлий на чорному). */
+html:not([data-mode="admin"]) .btn { position: relative; isolation: isolate; overflow: hidden; }
+html:not([data-mode="admin"]) .btn::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+  transform: translateY(101%); background: var(--color-gold-loud);
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+html:not([data-mode="admin"]) .btn-secondary::before { background: var(--fg); }
+html:not([data-mode="admin"]) .btn-danger::before { background: #B91C1C; }
+html:not([data-mode="admin"]) .btn-secondary { background: transparent; border-color: color-mix(in srgb, var(--fg) 30%, transparent); color: var(--fg); }
+html:not([data-mode="admin"]) .btn-primary:hover { background: var(--color-gold); }
+html.dark:not([data-mode="admin"]) .btn-primary:hover { background: var(--color-gold-bright); }
+@media (hover: hover) {
+  html:not([data-mode="admin"]) .btn:not(:disabled):hover::before { transform: none; }
+  html:not([data-mode="admin"]) .btn-primary:not(:disabled):hover { color: var(--color-ink); }
+  html:not([data-mode="admin"]) .btn-secondary:not(:disabled):hover { color: var(--bg); background: transparent; }
+  html:not([data-mode="admin"]) .btn-danger:not(:disabled):hover { color: #fff; background: var(--surface); }
+}
+html:not([data-mode="admin"]).motion-off .btn::before { transition: none; }
+
+/* Малі кнопки-іконки (серце, видалити, закрити) */
+html:not([data-mode="admin"]) .btn-icon { border-radius: 50%; }
+
+/* ----------------------------- Сторінка товару ----------------------------- */
+.pd-crumbs { font-size: .75rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
+.pd-grid { display: grid; gap: 2rem; }
+.pd-media { border: 1px solid var(--hair); border-radius: 4px; background: var(--surface); overflow: hidden; }
+.pd-kicker { font-family: var(--serif); font-style: italic; font-weight: 500; font-size: clamp(1.5rem, 2.2vw, 2rem); line-height: 1; color: var(--accent); }
+.pd-title { font-family: var(--font-sans); font-weight: 700; text-transform: uppercase; letter-spacing: -.03em; line-height: .95; font-size: clamp(1.9rem, 3.6vw, 3.6rem); overflow-wrap: anywhere; }
+.pd-buy { border: 1px solid var(--hair); border-radius: 4px; background: var(--surface); padding: 1.5rem; }
+.pd-price { font-family: var(--serif); font-weight: 600; font-size: clamp(2.4rem, 3.6vw, 3.4rem); line-height: 1; font-variant-numeric: lining-nums tabular-nums; }
+.pd-perks { border-top: 1px solid var(--hair); }
+.pd-perks li { display: flex; align-items: center; gap: .75rem; padding-block: .85rem; border-bottom: 1px solid var(--hair); font-size: .9rem; color: var(--fg-soft); }
+@media (min-width: 1024px) {
+  .pd-grid { grid-template-columns: repeat(2, 1fr); gap: 0 clamp(2rem, 5vw, 5rem); }
+}
+
+/* ----------------------------- Часті питання (акордеон на тонких лініях) ----------------------------- */
+.faq-list { border-top: 0; }
+.faq-item { border-bottom: 1px solid var(--hair); }
+.faq-item summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; min-height: 4.5rem; padding-block: 1.1rem;
+  list-style: none; cursor: pointer; font-weight: 600; font-size: clamp(1.05rem, 1.5vw, 1.3rem); line-height: 1.3;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary:hover { color: var(--accent); }
+.faq-n { font-variant-numeric: lining-nums; font-family: var(--serif); font-style: italic; font-weight: 500; font-size: 1.6rem; color: var(--accent); min-width: 2.2rem; display: inline-block; }
+.faq-item .pm-wrap { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; flex-shrink: 0; border: 1px solid var(--hair); border-radius: 50%; color: var(--accent); transition: background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out); }
+.faq-item[open] .pm-wrap, .faq-item summary:hover .pm-wrap { background: var(--color-gold-loud); color: var(--color-ink); border-color: transparent; }
+.faq-item p { padding: 0 3.5rem 1.6rem 2.2rem; max-width: 48rem; color: var(--fg-muted); line-height: 1.7; }
+
+/* ----------------------------- Контакти ----------------------------- */
+.ct-dark { background: var(--inv-bg); color: var(--inv-fg); border-radius: 4px; padding: clamp(1.5rem, 3vw, 2.5rem); }
+.ct-dark .k { font-size: .75rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--inv-muted); }
+.ct-dark a { display: block; margin-top: .35rem; transition: color var(--dur-fast) var(--ease-out); }
+.ct-dark a:hover { color: var(--inv-accent); }
+.ct-dark .big { font-family: var(--serif); font-weight: 600; font-size: clamp(1.9rem, 3vw, 2.8rem); line-height: 1.1; font-variant-numeric: lining-nums tabular-nums; }
+.ct-row { display: flex; justify-content: space-between; gap: 1rem; padding-block: .95rem; border-bottom: 1px solid var(--hair); }
+.ct-row:last-child { border-bottom: 0; }
+.ct-row dt { color: var(--fg-muted); }
+.ct-row dd { font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+.ct-ico { display: grid; place-items: center; width: 3rem; height: 3rem; flex-shrink: 0; border: 1px solid var(--hair); border-radius: 50%; color: var(--accent); font-size: 1.4rem; }
+.map-frame { border: 1px solid var(--hair); border-radius: 4px; overflow: hidden; background: var(--surface); }
+
+/* ----------------------------- Форми входу, реєстрації, профілю (спокійні) ----------------------------- */
+.auth-grid { display: grid; gap: 2rem; }
+.auth-grid .auth-card { max-width: 32rem; }
+html:not([data-mode="admin"]) .auth-grid .page-head { border: 0; margin: 0; padding-bottom: 0; }
+html:not([data-mode="admin"]) .auth-grid .page-head .lockup, html:not([data-mode="admin"]) .auth-grid .page-head .side { grid-column: 1 / -1; padding-left: 0; }
+@media (min-width: 1024px) {
+  .auth-grid { grid-template-columns: repeat(2, 1fr); gap: 0 clamp(2rem, 5vw, 5rem); align-items: start; }
+  .auth-grid .auth-card { grid-column: 2; }
+}
+
+/* ----------------------------- Рядки кошика, списку бажань, замовлень ----------------------------- */
+html:not([data-mode="admin"]) .row-card { transition: border-color var(--dur) var(--ease-out); }
+html:not([data-mode="admin"]) .row-card:hover { border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+html:not([data-mode="admin"]) .row-card img, html:not([data-mode="admin"]) .row-card .illo { border-radius: 2px; }
+html:not([data-mode="admin"]) .sum-line { display: flex; justify-content: space-between; gap: 1rem; padding-block: .8rem; border-bottom: 1px solid var(--hair); color: var(--fg-muted); }
+html:not([data-mode="admin"]) .sum-total { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding-top: 1rem; }
+html:not([data-mode="admin"]) .sum-total .price { font-size: 2.2rem; line-height: 1; }
+
+/* ----------------------------- Сторінка 404 ----------------------------- */
+html:not([data-mode="admin"]) .lockup.nf-title .sans { font-size: clamp(7rem, 26vw, 24rem); line-height: .8; letter-spacing: -.05em; }
+html:not([data-mode="admin"]) .lockup.nf-title .serif { font-size: clamp(1.75rem, 3.6vw, 3.4rem); }
+
+/* Таблиця товарів замовлення (спільна з адмін-панеллю, тому лише поза нею) */
+html:not([data-mode="admin"]) .table-wrap { border-radius: 4px; border-color: var(--hair); background: var(--surface); }
+html:not([data-mode="admin"]) .data-table th { letter-spacing: .12em; }
+html:not([data-mode="admin"]) .data-table tbody tr { border-color: var(--hair); }
+
+/* У темній темі --color-card білий, тому заглушка карти світліла; беремо ту саму поверхню, що й у карток */
+html:not([data-mode="admin"]) .map-frame .map-placeholder { background: var(--surface); }

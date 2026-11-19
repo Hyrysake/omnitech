@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Сторінку не знайдено | OmniTech</title>
+  <meta name="description" content="Такої сторінки на сайті OmniTech немає.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/src/styles/main.css">
+  <!--boot-->
+  <script type="module" src="/src/pages/static.js"></script>
+</head>
+<body data-page="notFound" class="flex min-h-dvh flex-col bg-paper font-sans text-ink antialiased dark:bg-ink dark:text-paper">
+  <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-coal focus:px-5 focus:py-3 focus:text-paper">Перейти до вмісту</a>
+  <!-- Шапку й підвал малює JavaScript (src/layout). Висота шапки зарезервована, щоб сторінка не «стрибала» -->
+  <div id="site-header" class="min-h-[65px]"></div>
+  <main id="main" tabindex="-1" class="frame flex-grow pb-24 pt-6 outline-none md:pt-8">
+    <section class="flex flex-col gap-10 pt-6 md:pt-10">
+      <!-- Величезне «404» з засічковим підписом над ним: той самий lockup, що на інших сторінках -->
+      <h1 class="lockup nf-title" data-reveal><span class="serif">Сторінку не знайдено</span><span class="sans">404</span></h1>
+      <p class="max-w-xl text-lg leading-relaxed text-[var(--fg-muted)]" data-reveal>Можливо, адресу введено з помилкою або сторінку перенесено.</p>
+      <div class="flex flex-wrap gap-3">
+        <a href="/" class="btn btn-primary min-h-12 px-8">На головну</a>
+        <a href="/catalog.html" class="btn btn-secondary min-h-12 px-8">До каталогу</a>
+      </div>
+    </section>
+  </main>
+  <div id="site-footer"></div>
+  <noscript>
+    <p class="mx-auto mb-8 max-w-7xl px-4 text-center">Для роботи магазину потрібно ввімкнути JavaScript у браузері.</p>
+  </noscript>
+</body>
+</html>

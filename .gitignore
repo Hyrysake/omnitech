@@ -18,3 +18,9 @@ backend/data/*
 # Завантажені картинки: у кожного свої
 backend/media/*
 !backend/media/.gitkeep
+
+# Пакети npm: встановлюються командою npm ci з package-lock.json, у репозиторій не потрапляють
+node_modules/
+
+# Зібраний сайт (npm run build): його можна будь-коли зібрати знову з вихідного коду
+frontend/dist/
