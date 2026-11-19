@@ -15,7 +15,59 @@
   <!-- Шапку й підвал малює JavaScript (src/layout). Висота шапки зарезервована, щоб сторінка не «стрибала» -->
   <div id="site-header" class="min-h-[65px]"></div>
   <main id="main" tabindex="-1" class="frame flex-grow pb-24 pt-6 outline-none md:pt-8">
-    <div class="card flex flex-col items-center px-6 py-14 text-center"><span class="grid size-16 place-items-center rounded-full bg-gold/10 text-gold dark:bg-gold-bright/15 dark:text-gold-bright"><i class="ph ph-hammer text-3xl" aria-hidden="true"></i></span><h1 class="mt-6 font-display text-3xl font-semibold">Сторінка в розробці</h1><p class="muted mt-3 max-w-md">Ця сторінка ще в розробці. Її замінить автор частини у своєму Pull Request: до того часу тут тимчасова заглушка, щоб меню й посилання працювали.</p></div>
+    <header class="section-head page-head">
+      <h1 class="lockup lockup-sm" data-reveal><span class="serif">Ваш акаунт</span><span class="sans">Профіль</span></h1>
+      <p id="profile-meta" class="side"></p>
+    </header>
+
+    <div class="grid gap-6 lg:grid-cols-2">
+      <form id="profile-form" novalidate class="card space-y-5 p-6 sm:p-10" aria-labelledby="profile-title">
+        <h2 id="profile-title" class="block-title">Особисті дані</h2>
+        <div>
+          <label for="name" class="label">Ім'я</label>
+          <input id="name" name="name" type="text" autocomplete="name" maxlength="100" class="input" aria-describedby="name-error">
+          <p id="name-error" class="field-error" hidden></p>
+        </div>
+        <div>
+          <label for="email" class="label">Пошта</label>
+          <input id="email" name="email" type="email" autocomplete="email" maxlength="254" class="input" aria-describedby="email-error">
+          <p id="email-error" class="field-error" hidden></p>
+        </div>
+        <div data-form-error class="alert alert-error" role="alert" hidden></div>
+        <button type="submit" class="btn btn-primary">Зберегти зміни</button>
+      </form>
+
+      <form id="password-form" novalidate class="card space-y-5 p-6 sm:p-10" aria-labelledby="password-title">
+        <h2 id="password-title" class="block-title">Зміна пароля</h2>
+        <div>
+          <label for="current_password" class="label">Поточний пароль</label>
+          <input id="current_password" name="current_password" type="password" autocomplete="current-password" maxlength="128" class="input" aria-describedby="current_password-error">
+          <p id="current_password-error" class="field-error" hidden></p>
+        </div>
+        <div>
+          <label for="new_password" class="label">Новий пароль</label>
+          <input id="new_password" name="new_password" type="password" autocomplete="new-password" maxlength="128" class="input" aria-describedby="new_password-hint new_password-error">
+          <p id="new_password-hint" class="hint">Щонайменше 6 символів.</p>
+          <p id="new_password-error" class="field-error" hidden></p>
+        </div>
+        <div>
+          <label for="new_password_confirm" class="label">Повторіть новий пароль</label>
+          <input id="new_password_confirm" name="new_password_confirm" type="password" autocomplete="new-password" maxlength="128" class="input" aria-describedby="new_password_confirm-error">
+          <p id="new_password_confirm-error" class="field-error" hidden></p>
+        </div>
+        <div data-form-error class="alert alert-error" role="alert" hidden></div>
+        <button type="submit" class="btn btn-primary">Змінити пароль</button>
+      </form>
+    </div>
+
+    <!-- Небезпечна зона: видалення акаунта. Перед запитом сторінка питає підтвердження -->
+    <section class="card mt-6 flex flex-col gap-4 border-red-200 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8 dark:border-red-950" aria-labelledby="delete-title">
+      <div>
+        <h2 id="delete-title" class="block-title">Видалення акаунта</h2>
+        <p class="muted mt-2">Акаунт буде видалено назавжди. Ваші замовлення залишаться в магазині без прив'язки до акаунта.</p>
+      </div>
+      <button id="delete-account" type="button" class="btn btn-danger shrink-0">Видалити акаунт</button>
+    </section>
   </main>
   <div id="site-footer"></div>
   <noscript>

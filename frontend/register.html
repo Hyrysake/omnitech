@@ -15,7 +15,39 @@
   <!-- Шапку й підвал малює JavaScript (src/layout). Висота шапки зарезервована, щоб сторінка не «стрибала» -->
   <div id="site-header" class="min-h-[65px]"></div>
   <main id="main" tabindex="-1" class="frame flex-grow pb-24 pt-6 outline-none md:pt-8">
-    <div class="card flex flex-col items-center px-6 py-14 text-center"><span class="grid size-16 place-items-center rounded-full bg-gold/10 text-gold dark:bg-gold-bright/15 dark:text-gold-bright"><i class="ph ph-hammer text-3xl" aria-hidden="true"></i></span><h1 class="mt-6 font-display text-3xl font-semibold">Сторінка в розробці</h1><p class="muted mt-3 max-w-md">Ця сторінка ще в розробці. Її замінить автор частини у своєму Pull Request: до того часу тут тимчасова заглушка, щоб меню й посилання працювали.</p></div>
+    <div class="auth-grid">
+      <header class="section-head page-head is-solo">
+        <h1 class="lockup lockup-sm" data-reveal><span class="serif">Ласкаво просимо</span><span class="sans">Реєстрація</span></h1>
+        <p class="side" data-reveal>Акаунт зберігає ваші замовлення, відгуки та список бажань.</p>
+      </header>
+
+      <form id="register-form" novalidate class="card auth-card space-y-5 p-6 sm:p-10">
+        <div>
+          <label for="name" class="label">Ім'я</label>
+          <input id="name" name="name" type="text" autocomplete="name" maxlength="100" class="input" aria-describedby="name-error">
+          <p id="name-error" class="field-error" hidden></p>
+        </div>
+        <div>
+          <label for="email" class="label">Пошта</label>
+          <input id="email" name="email" type="email" autocomplete="email" maxlength="254" class="input" aria-describedby="email-error">
+          <p id="email-error" class="field-error" hidden></p>
+        </div>
+        <div>
+          <label for="password" class="label">Пароль</label>
+          <input id="password" name="password" type="password" autocomplete="new-password" maxlength="128" class="input" aria-describedby="password-hint password-error">
+          <p id="password-hint" class="hint">Щонайменше 6 символів.</p>
+          <p id="password-error" class="field-error" hidden></p>
+        </div>
+        <div>
+          <label for="password_confirm" class="label">Повторіть пароль</label>
+          <input id="password_confirm" name="password_confirm" type="password" autocomplete="new-password" maxlength="128" class="input" aria-describedby="password_confirm-error">
+          <p id="password_confirm-error" class="field-error" hidden></p>
+        </div>
+        <div data-form-error class="alert alert-error" role="alert" hidden></div>
+        <button type="submit" class="btn btn-primary w-full">Створити акаунт</button>
+        <p class="muted text-center text-sm">Уже маєте акаунт? <a id="login-link" href="/login.html" class="link">Увійти</a></p>
+      </form>
+    </div>
   </main>
   <div id="site-footer"></div>
   <noscript>
