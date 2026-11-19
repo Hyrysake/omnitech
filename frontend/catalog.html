@@ -15,7 +15,83 @@
   <!-- Шапку й підвал малює JavaScript (src/layout). Висота шапки зарезервована, щоб сторінка не «стрибала» -->
   <div id="site-header"></div>
   <main id="main" tabindex="-1" class="frame flex-grow pb-20 pt-6 outline-none md:pt-8">
-    <div class="card flex flex-col items-center px-6 py-14 text-center"><span class="grid size-16 place-items-center rounded-full bg-gold/10 text-gold dark:bg-gold-bright/15 dark:text-gold-bright"><i class="ph ph-hammer text-3xl" aria-hidden="true"></i></span><h1 class="mt-6 font-display text-3xl font-semibold">Сторінка в розробці</h1><p class="muted mt-3 max-w-md">Ця сторінка ще в розробці. Її замінить автор частини у своєму Pull Request: до того часу тут тимчасова заглушка, щоб меню й посилання працювали.</p></div>
+    <!-- Заголовок у стилі «засічковий над жирним» (landonorris), але компактний: товари мають бути видно з першого екрана -->
+    <header class="section-head catalog-head">
+      <h1 class="lockup">
+        <span class="serif">Уся техніка</span>
+        <span class="sans">Каталог</span>
+      </h1>
+      <p class="side" data-reveal>Шукайте за назвою, обирайте категорію й діапазон ціни.</p>
+    </header>
+
+    <!-- Панель пошуку стоїть над товарами; при гортанні вгору повертається компактною панеллю (ui/floating-filters.js).
+         На телефоні категорії й ціна сховані за кнопкою «Фільтри».
+         novalidate вимикає стандартні підказки браузера: форму перевіряє наш код (src/ui/forms.js),
+         і помилки виглядають однаково в усіх браузерах. Значення фільтрів зберігаються в адресі сторінки (?q=…&page=2),
+         тому результат можна додати в закладки, а кнопка «Назад» повертає попередній пошук -->
+    <form id="filters" novalidate class="mx-[calc(var(--pad)*-1)] mt-5 border-b border-[var(--hair)] bg-paper/90 px-[var(--pad)] py-3 backdrop-blur-md reduced-transparency:bg-paper reduced-transparency:backdrop-blur-none dark:bg-ink/90 dark:reduced-transparency:bg-ink">
+      <div class="flex flex-wrap items-start gap-3">
+        <div class="min-w-0 flex-1 basis-64">
+          <label for="q" class="sr-only">Пошук</label>
+          <div class="relative">
+            <i class="ph ph-magnifying-glass pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-xl text-muted dark:text-muted-dark" aria-hidden="true"></i>
+            <input id="q" name="q" type="search" maxlength="100" autocomplete="off" placeholder="Пошук: ноутбук, навушники…" class="input rounded-full pl-12" aria-describedby="q-error">
+          </div>
+          <p id="q-error" class="field-error" hidden></p>
+        </div>
+        <div>
+          <label for="sort" class="sr-only">Сортування</label>
+          <select id="sort" name="sort" class="input w-auto rounded-full">
+            <option value="default" data-short="Популярні">Спочатку популярні</option>
+            <option value="price_asc" data-short="Дешевші">Від дешевших</option>
+            <option value="price_desc" data-short="Дорожчі">Від дорожчих</option>
+            <option value="name">За назвою</option>
+            <option value="newest" data-short="Нові">Спочатку нові</option>
+          </select>
+        </div>
+        <!-- Кнопка видна в «плаваючій» панелі й на телефоні: відкриває категорії й ціну -->
+        <button id="filters-toggle" type="button" class="filters-toggle pill pill-ghost" aria-expanded="false" aria-controls="filters-extra">
+          <i class="ph ph-sliders-horizontal" aria-hidden="true"></i> Фільтри
+        </button>
+      </div>
+      <div id="filters-extra" class="filters-extra">
+
+      <!-- Категорії — кнопки-«чіпи». Значення лежить у прихованому полі category; чіпи малює catalog.js -->
+      <input id="category" name="category" type="hidden" value="">
+      <div id="category-chips" class="mt-3 flex min-h-11 flex-wrap gap-2" role="group" aria-label="Категорії"></div>
+
+      <!-- Діапазон ціни ховається в <details>: відкривається без JavaScript -->
+      <details class="mt-3">
+        <summary class="inline-flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-semibold text-gold dark:text-gold-bright">
+          <i class="ph ph-sliders-horizontal" aria-hidden="true"></i> Ціна
+        </summary>
+        <div class="mt-2 grid max-w-md grid-cols-2 gap-3">
+          <div>
+            <label for="min" class="label">Від, грн</label>
+            <input id="min" name="min" type="number" min="0" inputmode="numeric" class="input" aria-describedby="min-error">
+            <p id="min-error" class="field-error" hidden></p>
+          </div>
+          <div>
+            <label for="max" class="label">До, грн</label>
+            <input id="max" name="max" type="number" min="0" inputmode="numeric" class="input" aria-describedby="max-error">
+            <p id="max-error" class="field-error" hidden></p>
+          </div>
+        </div>
+      </details>
+
+      <div class="filters-total mt-3 flex flex-wrap items-center gap-3">
+        <button id="reset" type="button" class="btn btn-secondary" hidden>Скинути</button>
+        <!-- aria-live: екранна читалка оголосить нову кількість після кожного пошуку -->
+        <p class="muted text-sm" aria-live="polite">Знайдено товарів: <span id="total" class="font-semibold tabular-nums">…</span></p>
+      </div>
+      </div>
+    </form>
+
+    <!-- Прихований заголовок: картки товарів мають заголовки h3, перед ними має бути h2 (порядок заголовків важливий для читалок екрана) -->
+    <h2 class="sr-only">Список товарів</h2>
+    <!-- data-stagger-grid: картки «заходять» колонками за часом (кожна колонка зі свого зсуву й трохи пізніше), не прив'язано до прокрутки -->
+    <section id="products" class="catalog-grid mt-6 pb-[30vh]" data-stagger-grid aria-label="Список товарів"></section>
+    <nav id="pagination" class="mt-10" aria-label="Сторінки каталогу"></nav>
   </main>
   <div id="site-footer"></div>
   <noscript>
