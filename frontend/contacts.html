@@ -15,7 +15,78 @@
   <!-- Шапку й підвал малює JavaScript (src/layout). Висота шапки зарезервована, щоб сторінка не «стрибала» -->
   <div id="site-header" class="min-h-[65px]"></div>
   <main id="main" tabindex="-1" class="frame flex-grow pb-24 pt-6 outline-none md:pt-8">
-    <div class="card flex flex-col items-center px-6 py-14 text-center"><span class="grid size-16 place-items-center rounded-full bg-gold/10 text-gold dark:bg-gold-bright/15 dark:text-gold-bright"><i class="ph ph-hammer text-3xl" aria-hidden="true"></i></span><h1 class="mt-6 font-display text-3xl font-semibold">Сторінка в розробці</h1><p class="muted mt-3 max-w-md">Ця сторінка ще в розробці. Її замінить автор частини у своєму Pull Request: до того часу тут тимчасова заглушка, щоб меню й посилання працювали.</p></div>
+    <header class="section-head page-head">
+      <h1 class="lockup lockup-sm" data-reveal><span class="serif">Поговорімо</span><span class="sans">Контакти</span></h1>
+      <p class="side" data-reveal>Приходьте в магазин або зателефонуйте. Відповідаємо протягом робочого дня.</p>
+    </header>
+
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-12">
+      <div class="flex flex-col gap-4 lg:col-span-5">
+        <div class="ct-dark">
+          <p class="k">Телефон</p>
+          <a href="tel:+380501234567" class="big">+38 (050) 123-45-67</a>
+          <p class="k mt-8">Email</p>
+          <a href="mailto:support@omnitech.example" class="mt-1 break-all text-lg font-medium">support@omnitech.example</a>
+        </div>
+        <div class="card flex gap-4 p-6">
+          <span class="ct-ico"><i class="ph ph-map-pin" aria-hidden="true"></i></span>
+          <div>
+            <p class="muted text-sm">Адреса</p>
+            <p class="mt-1 text-xl font-semibold">м. Луцьк, просп. Волі, 1</p>
+          </div>
+        </div>
+        <div class="card p-6">
+          <div class="flex items-center gap-4">
+            <span class="ct-ico"><i class="ph ph-clock" aria-hidden="true"></i></span>
+            <h2 class="block-title">Графік роботи</h2>
+          </div>
+          <dl class="mt-4">
+            <div class="ct-row"><dt>Понеділок-п'ятниця</dt><dd>09:00-20:00</dd></div>
+            <div class="ct-row"><dt>Субота</dt><dd>10:00-18:00</dd></div>
+            <div class="ct-row"><dt>Неділя</dt><dd>вихідний</dd></div>
+          </dl>
+        </div>
+      </div>
+      <!-- Карта OpenStreetMap. У темній темі dark:invert-92 інвертує кольори: світла карта стає темною -->
+      <div class="map-frame min-h-[24rem] lg:col-span-7">
+        <!-- Карта завантажується з openstreetmap.org лише після натискання: без цього сторінка не звертається до чужих серверів -->
+        <button id="map-load" type="button" class="map-placeholder">
+          <span class="map-pin" aria-hidden="true"></span>
+          <span class="mt-3 font-semibold">Показати карту</span>
+          <span class="muted max-w-xs text-sm">Луцьк. Карта завантажиться з сайту OpenStreetMap.</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Форма зворотного зв'язку: POST /api/v1/feedback. Повідомлення бачить адміністратор у розділі «Повідомлення» -->
+    <section id="feedback" class="mt-20 border-t border-[var(--hair)] pt-12 md:mt-28 grid grid-cols-1 gap-8 lg:grid-cols-12" aria-labelledby="feedback-title">
+      <div class="lg:col-span-5">
+        <h2 id="feedback-title" class="lockup block-lockup" data-reveal><span class="serif">Є питання?</span><span class="sans">Напишіть нам</span></h2>
+        <p class="muted mt-4 text-lg leading-relaxed">Питання щодо товару, замовлення чи гарантії? Залиште повідомлення, і ми відповімо на пошту.</p>
+      </div>
+      <form id="feedback-form" novalidate class="card space-y-5 p-6 sm:p-10 lg:col-span-7">
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <div>
+            <label for="name" class="label">Ім'я</label>
+            <input id="name" name="name" type="text" maxlength="100" autocomplete="name" class="input" aria-describedby="name-error">
+            <p id="name-error" class="field-error" hidden></p>
+          </div>
+          <div>
+            <label for="email" class="label">Пошта</label>
+            <input id="email" name="email" type="email" maxlength="254" autocomplete="email" class="input" aria-describedby="email-error">
+            <p id="email-error" class="field-error" hidden></p>
+          </div>
+        </div>
+        <div>
+          <label for="message" class="label">Повідомлення</label>
+          <textarea id="message" name="message" rows="5" maxlength="2000" class="input" aria-describedby="message-hint message-error"></textarea>
+          <p id="message-hint" class="hint"><span id="message-count">0</span> / 2000 символів, щонайменше 10.</p>
+          <p id="message-error" class="field-error" hidden></p>
+        </div>
+        <div data-form-error class="alert alert-error" role="alert" hidden></div>
+        <button type="submit" class="btn btn-primary"><i class="ph ph-paper-plane-tilt" aria-hidden="true"></i> Надіслати</button>
+      </form>
+    </section>
   </main>
   <div id="site-footer"></div>
   <noscript>
