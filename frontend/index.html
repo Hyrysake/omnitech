@@ -15,7 +15,161 @@
   <!-- Шапку й підвал малює JavaScript (src/layout). Висота шапки зарезервована, щоб сторінка не «стрибала» -->
   <div id="site-header"></div>
   <main id="main" tabindex="-1" class="flex-grow outline-none">
-    <div class="card flex flex-col items-center px-6 py-14 text-center"><span class="grid size-16 place-items-center rounded-full bg-gold/10 text-gold dark:bg-gold-bright/15 dark:text-gold-bright"><i class="ph ph-hammer text-3xl" aria-hidden="true"></i></span><h1 class="mt-6 font-display text-3xl font-semibold">Сторінка в розробці</h1><p class="muted mt-3 max-w-md">Ця сторінка ще в розробці. Її замінить автор частини у своєму Pull Request: до того часу тут тимчасова заглушка, щоб меню й посилання працювали.</p></div>
+
+    <!-- 1. Головний екран (santalarch): три слова сходинками по колонках сітки і величезне OMNITECH,
+         (OMNI засічковим + TECH жирним), повністю видиме -->
+    <section class="hero" aria-labelledby="hero-title">
+      <p class="hero-caption"><span>Магазин техніки</span><span>Луцьк</span></p>
+      <h1 id="hero-title" class="hero-title" data-reveal data-stagger="170">
+        <span class="line line-1">Техніка.</span>
+        <span class="line line-2">Точність.</span>
+        <span class="line line-3">Тиша.</span>
+      </h1>
+      <div class="hero-side">
+        <p class="hero-lead">Ноутбуки, смартфони, ігрові аксесуари та фототехніка в Луцьку. З офіційною гарантією та чесною порадою.</p>
+        <div class="mt-7 flex flex-wrap gap-3">
+          <a href="/catalog.html" class="pill pill-loud pill-lg"><span class="roll"><span>Відкрити каталог</span><span aria-hidden="true">Відкрити каталог</span></span> <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
+          <a href="#popular" class="pill pill-ghost pill-lg"><span class="roll"><span>Популярне</span><span aria-hidden="true">Популярне</span></span></a>
+        </div>
+      </div>
+      <p class="hero-cue"><span class="stem" aria-hidden="true"></span>Гортайте вниз</p>
+      <div class="hero-mark" role="img" aria-label="OmniTech"><span class="mega" aria-hidden="true"><span class="o">OMNI</span><span class="t">TECH</span></span></div>
+    </section>
+
+    <!-- 2. Розповідь у чотири кроки (santalarch): на широкому екрані з рухом секція «прилипає» на ~4 екрани,
+         прокрутка малює обриси й змінює слова. Без руху або на телефоні — звичайний список -->
+    <section id="story" class="story tone-invert" data-tone="invert" data-story aria-labelledby="story-title">
+      <a href="#categories" class="story-skip sr-only focus:not-sr-only pill pill-loud">Пропустити розповідь</a>
+      <div class="story-head">
+        <h2 id="story-title" class="lockup lockup-sm" data-reveal>
+          <span class="serif">Чотири кроки</span>
+          <span class="sans">до покупки</span>
+        </h2>
+        <p class="story-count" aria-hidden="true"><span data-story-count>01</span> <span class="of">/ 04</span></p>
+      </div>
+      <ol class="story-steps">
+        <li class="story-step">
+          <p class="num">01 — Каталог</p>
+          <h3 class="story-word" data-reveal>Оберіть</h3>
+          <p class="story-text" data-reveal>Живий пошук і фільтри за ціною та категорією: потрібну техніку видно за кілька секунд.</p>
+          <svg class="story-art" viewBox="0 0 400 300" aria-hidden="true">
+            <rect x="20" y="40" width="88" height="70" rx="4"/>
+            <rect x="124" y="40" width="88" height="70" rx="4"/>
+            <rect x="20" y="126" width="88" height="70" rx="4"/>
+            <rect x="124" y="126" width="88" height="70" rx="4"/>
+            <path d="M20 230 H212 M20 254 H150"/>
+            <circle cx="304" cy="120" r="50"/>
+            <path d="M340 156 L384 200"/>
+            <path d="M282 104 C 290 92, 304 88, 316 92"/>
+          </svg>
+        </li>
+        <li class="story-step">
+          <p class="num">02 — Порада</p>
+          <h3 class="story-word" data-reveal>Порівняйте</h3>
+          <p class="story-text" data-reveal>Характеристики, відгуки покупців і чесна порада консультанта, без нав’язування.</p>
+          <svg class="story-art" viewBox="0 0 400 300" aria-hidden="true">
+            <rect x="40" y="40" width="110" height="200" rx="16"/>
+            <rect x="250" y="40" width="110" height="200" rx="16"/>
+            <path d="M60 200 V170 M85 200 V140 M110 200 V120 M130 200 V160"/>
+            <path d="M270 200 V150 M295 200 V110 M320 200 V130 M340 200 V90"/>
+            <path d="M170 120 H230 L216 106 M230 160 H170 L184 174"/>
+            <path d="M40 270 H360"/>
+          </svg>
+        </li>
+        <li class="story-step">
+          <p class="num">03 — Кошик</p>
+          <h3 class="story-word" data-reveal>Замовте</h3>
+          <p class="story-text" data-reveal>Кошик і оформлення за хвилину. Статус замовлення видно в особистому кабінеті.</p>
+          <svg class="story-art" viewBox="0 0 400 300" aria-hidden="true">
+            <path d="M110 100 H290 L272 260 H128 Z"/>
+            <path d="M150 100 V80 C150 30 250 30 250 80 V100"/>
+            <path d="M165 180 L192 207 L245 150"/>
+            <path d="M60 280 H340"/>
+          </svg>
+        </li>
+        <li class="story-step">
+          <p class="num">04 — Доставка</p>
+          <h3 class="story-word" data-reveal>Отримайте</h3>
+          <p class="story-text" data-reveal>Доставка по Україні за 1-2 дні, у Луцьку кур’єр привезе в день замовлення.</p>
+          <svg class="story-art" viewBox="0 0 400 300" aria-hidden="true">
+            <path d="M20 170 L64 148 L108 170 V222 L64 244 L20 222 Z"/>
+            <path d="M20 170 L64 192 L108 170 M64 192 V244"/>
+            <path d="M120 214 C 160 214, 170 170, 205 170 C 240 170, 245 214, 282 214" stroke-dasharray="2 9"/>
+            <path d="M296 244 V176 L338 140 L380 176 V244 Z"/>
+            <path d="M326 244 V206 H350 V244"/>
+            <path d="M10 256 H390"/>
+          </svg>
+        </li>
+      </ol>
+      <div class="story-bar" aria-hidden="true"><i></i></div>
+    </section>
+
+    <!-- 3. Категорії: великі рядки на всю ширину. Рядки приходять з API (GET /api/v1/categories), їх малює home.js -->
+    <section id="categories" class="section outline-none" tabindex="-1" aria-labelledby="categories-title">
+      <div class="section-head">
+        <h2 id="categories-title" class="lockup" data-reveal>
+          <span class="serif">Обирайте за</span>
+          <span class="sans">категоріями</span>
+        </h2>
+        <p class="side">Сім розділів — від ноутбуків до фототехніки. <a href="/catalog.html" class="wipe font-semibold text-[var(--fg)]">Увесь каталог</a></p>
+      </div>
+      <div id="category-list" class="cat-list"></div>
+    </section>
+
+    <!-- 4. Популярні товари: горизонтальна стрічка. Список приходить з API (GET /api/v2/products?featured=true) -->
+    <section id="popular" class="section" aria-labelledby="popular-title">
+      <div class="section-head">
+        <h2 id="popular-title" class="lockup" data-reveal>
+          <span class="serif">Найчастіше</span>
+          <span class="sans">обирають</span>
+        </h2>
+        <p class="side">Моделі, які ми радимо найчастіше. Стрічка гортається вбік <i class="ph ph-arrows-horizontal" aria-hidden="true"></i></p>
+      </div>
+      <div id="popular-list" class="strip-wide" tabindex="0" aria-label="Популярні товари: гортається вбік"></div>
+    </section>
+
+    <!-- 5. Переваги: чотири колонки точно по лініях сітки -->
+    <section id="features" class="section" aria-labelledby="features-title">
+      <div class="section-head">
+        <h2 id="features-title" class="lockup" data-reveal>
+          <span class="serif">Чому купують</span>
+          <span class="sans">у нас</span>
+        </h2>
+      </div>
+      <div class="features">
+        <div class="feature"><p class="big" aria-hidden="true">01</p><h3>Офіційна гарантія</h3><p data-reveal>Від 12 місяців на всю техніку, талон видаємо разом із товаром.</p></div>
+        <div class="feature"><p class="big" aria-hidden="true">02</p><h3>Доставка за 1-2 дні</h3><p data-reveal>Новою поштою по Україні, кур'єром по Луцьку в день замовлення.</p></div>
+        <div class="feature"><p class="big" aria-hidden="true">03</p><h3>14 днів на повернення</h3><p data-reveal>Якщо техніка не підійшла, повернемо гроші без зайвих питань.</p></div>
+        <div class="feature"><p class="big" aria-hidden="true">04</p><h3>Налаштування в подарунок</h3><p data-reveal>Перенесемо дані зі старого телефона і встановимо потрібні програми.</p></div>
+      </div>
+    </section>
+
+    <!-- 6. Відгуки: <figure> + <blockquote> + <figcaption> — розмітка цитати з автором -->
+    <section class="section" aria-labelledby="reviews-title">
+      <div class="section-head">
+        <h2 id="reviews-title" class="lockup lockup-sm" data-reveal>
+          <span class="serif">Що кажуть</span>
+          <span class="sans">покупці</span>
+        </h2>
+      </div>
+      <div class="quotes">
+        <figure><blockquote data-reveal>«Порадили ноутбук на 8 тисяч дешевший за той, що я хотіла, і він мені повністю підходить.»</blockquote><figcaption><b>Олена Ковальчук</b>, Луцьк</figcaption></figure>
+        <figure><blockquote data-reveal>«Замовив геймпад увечері, наступного дня вже грав. Упаковка ціла, чек у коробці.»</blockquote><figcaption><b>Максим Ткачук</b>, Рівне</figcaption></figure>
+        <figure><blockquote data-reveal>«Мамі перенесли всі фото й контакти на новий телефон просто в магазині.»</blockquote><figcaption><b>Ірина Мельник</b>, Луцьк</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- 7. Заклик завітати до магазину: велике «гучне» золото -->
+    <section class="section cta" aria-labelledby="cta-title">
+      <h2 id="cta-title" class="lockup" data-reveal>
+        <span class="serif">Приходьте</span>
+        <span class="sans">подивитися наживо</span>
+      </h2>
+      <div>
+        <p class="text-[var(--fg-muted)] leading-relaxed" data-reveal>Усю техніку можна потримати в руках і порівняти до покупки.</p>
+        <a href="/contacts.html" class="pill pill-loud pill-lg mt-6"><span class="roll"><span>Контакти</span><span aria-hidden="true">Контакти</span></span> <i class="ph ph-arrow-right" aria-hidden="true"></i></a>
+      </div>
+    </section>
   </main>
   <div id="site-footer"></div>
   <noscript>
