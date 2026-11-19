@@ -15,7 +15,47 @@
   <!-- Шапку й підвал малює JavaScript (src/layout). Висота шапки зарезервована, щоб сторінка не «стрибала» -->
   <div id="site-header" class="min-h-[65px]"></div>
   <main id="main" tabindex="-1" class="frame flex-grow pb-24 pt-6 outline-none md:pt-8">
-    <div class="card flex flex-col items-center px-6 py-14 text-center"><span class="grid size-16 place-items-center rounded-full bg-gold/10 text-gold dark:bg-gold-bright/15 dark:text-gold-bright"><i class="ph ph-hammer text-3xl" aria-hidden="true"></i></span><h1 class="mt-6 font-display text-3xl font-semibold">Сторінка в розробці</h1><p class="muted mt-3 max-w-md">Ця сторінка ще в розробці. Її замінить автор частини у своєму Pull Request: до того часу тут тимчасова заглушка, щоб меню й посилання працювали.</p></div>
+    <a href="/cart.html" class="back-link"><i class="ph ph-arrow-left" aria-hidden="true"></i> Назад до кошика</a>
+    <header class="section-head page-head is-long">
+      <h1 class="lockup lockup-sm" data-reveal><span class="serif">Майже готово</span><span class="sans">Оформлення замовлення</span></h1>
+      <p class="side" data-reveal>Залиште контакти й адресу, решту зробимо ми.</p>
+    </header>
+
+    <div id="checkout-root" class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-14">
+      <form id="checkout-form" novalidate class="card space-y-5 p-6 sm:p-10">
+        <div id="guest-note" class="alert alert-info" hidden>
+          <i class="ph ph-info mt-0.5 shrink-0 text-xl" aria-hidden="true"></i>
+          <p>Ви оформлюєте замовлення як гість. <a id="login-link" href="/login.html" class="link">Увійдіть</a>, щоб воно збереглося в історії замовлень.</p>
+        </div>
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label for="customer_name" class="label">Ім'я та прізвище</label>
+            <input id="customer_name" name="customer_name" type="text" autocomplete="name" maxlength="100" class="input" aria-describedby="customer_name-error">
+            <p id="customer_name-error" class="field-error" hidden></p>
+          </div>
+          <div>
+            <label for="phone" class="label">Телефон</label>
+            <input id="phone" name="phone" type="tel" autocomplete="tel" maxlength="20" placeholder="+380501234567" class="input" aria-describedby="phone-error">
+            <p id="phone-error" class="field-error" hidden></p>
+          </div>
+        </div>
+        <div>
+          <label for="email" class="label">Пошта</label>
+          <input id="email" name="email" type="email" autocomplete="email" maxlength="254" class="input" aria-describedby="email-hint email-error">
+          <p id="email-hint" class="hint">Надішлемо сюди підтвердження замовлення.</p>
+          <p id="email-error" class="field-error" hidden></p>
+        </div>
+        <div>
+          <label for="address" class="label">Адреса доставки</label>
+          <textarea id="address" name="address" rows="3" autocomplete="street-address" maxlength="300" placeholder="Місто, вулиця, будинок або відділення Нової пошти" class="input" aria-describedby="address-error"></textarea>
+          <p id="address-error" class="field-error" hidden></p>
+        </div>
+        <div data-form-error class="alert alert-error" role="alert" hidden></div>
+        <button type="submit" class="btn btn-primary w-full min-h-12 text-base sm:w-auto">Підтвердити замовлення</button>
+      </form>
+
+      <aside id="summary" class="card h-fit p-6 lg:sticky lg:top-28" aria-label="Ваше замовлення"></aside>
+    </div>
   </main>
   <div id="site-footer"></div>
   <noscript>
