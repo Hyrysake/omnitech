@@ -1,0 +1,732 @@
+/* ============================================================================================
+   Новий дизайн OmniTech (лабораторна 06).
+   Ідеї з чотирьох сайтів-референсів:
+   - santalarch: величезне слово OMNITECH, обрізане краєм екрана; тонка сітка колонок; поява слів;
+   - landonorris: живі контурні лінії на тлі; заголовки «засічковий над жирним»; одне гучне золото;
+   - lusion: заставка з лічильником; тонка смужка прокручування справа; золота стрічка, що малюється;
+   Усі тривалості й криві руху задані ОДИН раз змінними нижче й використовуються всюди.
+   ============================================================================================ */
+
+:root {
+  /* Криві руху (easing) і тривалості */
+  --ease-out: cubic-bezier(.25, 1, .5, 1);       /* головна крива сайту: швидкий старт, довгий м'який кінець */
+  --ease-in: cubic-bezier(.5, 0, .75, 0);        /* для зникнення */
+  --ease-in-out: cubic-bezier(.7, 0, .2, 1);     /* для шторок і заставки */
+  --ease-expo: cubic-bezier(.87, 0, .13, 1);     /* «вікно» заставки */
+  --dur-fast: .3s;
+  --dur: .5s;
+  --dur-slow: .8s;
+  --dur-reveal: 1.2s;
+
+  /* Поверхні світлої теми */
+  --bg: var(--color-paper);
+  --fg: var(--color-ink);
+  --fg-soft: var(--color-graphite);
+  --fg-muted: var(--color-muted);
+  --accent: var(--color-gold);
+  --hair: rgb(12 10 9 / .14);
+  /* Інверсна смуга (у світлій темі — чорна, у темній — кремова) */
+  --inv-bg: #0E0C0A;
+  --inv-fg: var(--color-paper);
+  --inv-muted: #B5AEA6;
+  --inv-accent: var(--color-gold-loud);
+  --inv-hair: rgb(250 247 240 / .16);
+  --inv-line: var(--color-gold-loud);
+
+  --pad: clamp(1rem, 2.6vw, 2.5rem);   /* поле зліва і справа; від нього рахується сітка колонок */
+  --header-h: 4rem;
+}
+.dark {
+  --bg: var(--color-ink);
+  --fg: var(--color-paper);
+  --fg-soft: #D6D3D1;
+  --fg-muted: var(--color-muted-dark);
+  --accent: var(--color-gold-bright);
+  --hair: rgb(250 247 240 / .12);
+  --inv-bg: var(--color-cream);
+  --inv-fg: var(--color-ink);
+  --inv-muted: #57534E;
+  --inv-accent: #8A5306;
+  --inv-hair: rgb(12 10 9 / .16);
+  --inv-line: #8A5306;
+}
+
+/* Фон сторінки малює <html>: <body> прозорий, щоб під ним було видно полотно з контурами */
+html { background-color: var(--bg); }
+body { background-color: transparent !important; }
+::selection { background: var(--color-gold-loud); color: var(--color-ink); }
+
+/* Lenis (плавна прокрутка) вимагає звичайного scroll-behavior, інакше «плавність» подвоюється */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: clip; }
+
+/* Рамка вмісту на всю ширину екрана з полями --pad (за нею вирівняна сітка колонок) */
+.frame { width: 100%; padding-inline: var(--pad); }
+
+/* ----------------------------- Сітка колонок (santalarch) -----------------------------
+   Фіксований шар над сторінкою з 5 вертикальними лініями. mix-blend-mode: difference —
+   колір лінії «віднімається» від фону: на кремовому лінії темніші, на чорній смузі світліші. */
+.grid-lines {
+  position: fixed;
+  inset: 0;
+  z-index: -1;            /* за вмістом: лінії не перетинають картки й поля форм */
+  pointer-events: none;
+}
+.grid-lines i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgb(12 10 9 / .13);
+  left: calc(var(--pad) + (100% - 2 * var(--pad)) * var(--k) / 4);
+}
+.dark .grid-lines i { background: rgb(250 247 240 / .1); }
+.grid-lines i:nth-child(1) { --k: 0; }
+.grid-lines i:nth-child(2) { --k: 1; }
+.grid-lines i:nth-child(3) { --k: 2; }
+.grid-lines i:nth-child(4) { --k: 3; }
+.grid-lines i:nth-child(5) { --k: 4; left: calc(100% - var(--pad) - 1px); }
+@media (max-width: 767px) {
+  .grid-lines { display: none; }
+}
+/* Лінії «стікають» згори вниз (clip-path), коли сторінка готова */
+.motion-on .grid-lines i { clip-path: inset(0 0 100% 0); transition: clip-path 1.4s var(--ease-out); }
+.motion-on .grid-lines i:nth-child(2) { transition-delay: .12s; }
+.motion-on .grid-lines i:nth-child(3) { transition-delay: .24s; }
+.motion-on .grid-lines i:nth-child(4) { transition-delay: .36s; }
+.motion-on .grid-lines i:nth-child(5) { transition-delay: .48s; }
+.motion-on .grid-lines.is-in i { clip-path: inset(0); }
+
+/* ----------------------------- Шапка ----------------------------- */
+.site-header {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 50;
+  height: var(--header-h);
+  color: var(--fg);
+  transition: transform .45s var(--ease-out), background-color var(--dur) var(--ease-out);
+}
+.motion-off .site-header { transition: none; }
+/* Під шапкою резервуємо місце, щоб вміст не заходив під неї */
+#site-header { min-height: var(--header-h) !important; }
+.site-header::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 1px;
+  background: var(--hair);
+}
+.site-header.is-solid { background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(12px); }
+@media (prefers-reduced-transparency: reduce) { .site-header.is-solid { background: var(--bg); backdrop-filter: none; } }
+.site-header.is-hidden { transform: translateY(-100%); }
+/* Фокус КЛАВІАТУРОЮ в шапці (Tab, :focus-visible; клік мишею не тримає шапку) — шапка повертається, навіть якщо була схована гортанням */
+.site-header.is-hidden:has(:focus-visible) { transform: none; }
+.header-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: center;
+  height: 100%;
+  padding-inline: var(--pad);
+}
+.header-nav { display: none; }
+.header-actions { grid-column: 2 / -1; display: flex; justify-content: flex-end; align-items: center; gap: .25rem; }
+@media (min-width: 1024px) {
+  .header-nav { display: flex; grid-column: 2 / 4; align-self: stretch; }
+  .header-nav a {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding-left: .9rem;
+    font-size: .8125rem;
+    font-weight: 500;
+    letter-spacing: .01em;
+  }
+  /* Коротка риска під пунктом меню — як на santalarch */
+  .header-nav a::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 1px;
+    height: .5rem;
+    background: currentColor;
+    opacity: .5;
+  }
+  .header-nav a[aria-current="page"]::before { opacity: 1; background: var(--accent); height: .9rem; }
+  .header-actions { grid-column: 4; }
+}
+
+/* Логотип: «Omni» засічковим над «TECH» жирним (як LANDO / NORRIS) */
+.lockup-logo { display: inline-flex; flex-direction: column; line-height: .82; min-height: 2.75rem; justify-content: center; }
+.lockup-logo .l1 { font-family: var(--font-display); font-weight: 500; font-size: 1.45rem; letter-spacing: -.01em; }
+.lockup-logo .l2 { font-family: var(--font-sans); font-weight: 700; font-size: .98rem; letter-spacing: .02em; }
+
+/* Кнопка-«пігулка» (pill) */
+.pill {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  border-radius: 999px;
+  padding: .5rem 1.25rem;
+  font-size: .875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.pill:active { transform: scale(.97); }
+.pill-loud { background: var(--color-gold-loud); color: var(--color-ink); }
+.pill-loud:hover { background: #F0BE4E; }
+.pill-ghost { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); }
+.pill-ghost:hover { border-color: currentColor; }
+.pill-ink { background: var(--fg); color: var(--bg); }
+.pill-lg { min-height: 3.5rem; padding: .75rem 1.75rem; font-size: 1rem; }
+
+/* Текст, що «виїжджає» вгору при наведенні: дві копії напису, друга прихована від читалок (aria-hidden) */
+.roll { display: inline-grid; overflow: hidden; padding-block: .14em; margin-block: -.14em; vertical-align: top; }
+.roll > span { grid-area: 1 / 1; transition: transform var(--dur-slow) var(--ease-out); }
+.roll > span + span { transform: translateY(110%); }
+@media (hover: hover) {
+  a:hover > .roll > span:first-child, button:hover > .roll > span:first-child { transform: translateY(-110%); }
+  a:hover > .roll > span + span, button:hover > .roll > span + span { transform: none; }
+}
+
+/* Підкреслення, що «стирається» зліва направо при наведенні й повертається */
+.wipe {
+  background: linear-gradient(currentColor, currentColor) 0 100% / 100% 1px no-repeat;
+  padding-bottom: .15em;
+  transition: background-size var(--dur-slow) var(--ease-out);
+}
+@media (hover: hover) {
+  .wipe:hover { background-position: 100% 100%; background-size: 0 1px; }
+}
+
+/* Перемикач «Рух» */
+.motion-switch { display: inline-flex; align-items: center; gap: .6rem; min-height: 2.75rem; font-size: .875rem; font-weight: 500; cursor: pointer; }
+.motion-switch .track { position: relative; width: 2.25rem; height: 1.25rem; border-radius: 999px; border: 1px solid currentColor; opacity: .9; }
+.motion-switch .track::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: calc(1.25rem - 6px);
+  height: calc(1.25rem - 6px);
+  border-radius: 50%;
+  background: currentColor;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.motion-switch[aria-pressed="true"] .track { background: var(--color-gold-loud); border-color: var(--color-gold-loud); }
+.motion-switch[aria-pressed="true"] .track::after { transform: translateX(1rem); background: var(--color-ink); }
+
+/* ----------------------------- Меню-оверлей ----------------------------- */
+.menu-overlay .menu-link { font-family: var(--font-sans); font-weight: 700; text-transform: uppercase; letter-spacing: -.02em; font-size: clamp(2rem, 6.5vw, 4.75rem); line-height: 1; }
+.menu-overlay .menu-link .roll { padding-block: .08em; }
+.menu-overlay .menu-link[aria-current="page"] { text-decoration: none; color: var(--accent); }
+@media (prefers-reduced-motion: no-preference) {
+  .menu-overlay .menu-link:hover, .menu-overlay .menu-link:focus-visible { transform: none; }
+}
+/* Анімація лише в момент відкриття (клас is-opening), тож перемикач «Рух» її не повторює */
+.motion-on .menu-overlay.is-opening[open] { animation: menu-wipe var(--dur-slow) var(--ease-in-out) both; }
+.motion-on .menu-overlay.is-opening[open] .menu-link { animation: rise .9s var(--ease-out) both; animation-delay: calc(var(--i, 0) * 60ms + 200ms); }
+.motion-off .menu-overlay[open], .motion-off .menu-overlay[open] .menu-link { animation: none; }
+@keyframes menu-wipe { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
+
+/* ----------------------------- Головний екран (hero) ----------------------------- */
+.hero {
+  position: relative;
+  min-height: calc(100svh - var(--header-h));
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: auto 1fr auto auto;
+  padding-inline: var(--pad);
+  padding-top: clamp(1.5rem, 5vh, 3.5rem);
+}
+.hero-caption { grid-column: 1 / -1; display: flex; justify-content: space-between; font-size: .75rem; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--fg-muted); }
+.hero-caption span { padding-left: 0; }
+.hero-title {
+  grid-column: 1 / -1;
+  margin-top: clamp(1rem, 4vh, 3rem);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(3.4rem, 10.6vw, 11.5rem);
+  line-height: .86;
+  letter-spacing: -.025em;
+}
+.hero-title .line { display: block; }
+.hero-title .line-2 { padding-left: 12vw; }
+.hero-title .line-3 { padding-left: 24vw; font-style: italic; color: var(--accent); }
+@media (min-width: 1024px) {
+  .hero-title .line-2 { padding-left: calc((100vw - 2 * var(--pad)) / 4); }
+  .hero-title .line-3 { padding-left: calc((100vw - 2 * var(--pad)) / 2); }
+}
+.hero-side { grid-column: 1 / -1; margin-top: 2rem; max-width: 34rem; }
+/* На вузькому екрані — колонка фіксованої висоти (екран мінус шапка): шрифт, що довантажився, не зсуває наступні блоки */
+@media (max-width: 1023px) { .hero { display: flex; flex-direction: column; min-height: calc(100svh - var(--header-h)); } .hero-title { margin-top: 2.5rem; } .hero-mark { margin-top: auto; flex: none; } .hero-cue { margin-top: 1.5rem; } }
+@media (min-width: 1024px) {
+  .hero-side { grid-column: 4; grid-row: 2; align-self: end; margin: 0 0 2rem; padding-left: .9rem; }
+  .hero-title { grid-row: 2; align-self: start; }
+}
+.hero-lead { font-size: clamp(1rem, 1.15vw, 1.2rem); line-height: 1.55; color: var(--fg-soft); }
+.hero-cue {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: flex-end;
+  gap: .75rem;
+  margin-top: 2rem;
+  font-size: .75rem;
+  font-weight: 500;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+@media (min-width: 1024px) { .hero-cue { grid-column: 4; padding-left: .9rem; margin-top: 0; } }
+.hero-cue .stem { display: block; width: 1px; height: 3.5rem; background: currentColor; transform-origin: top; }
+.motion-on .hero-cue .stem { animation: stem 2.4s var(--ease-in-out) infinite; }
+@keyframes stem { 0% { transform: scaleY(0); transform-origin: top; } 45% { transform: scaleY(1); transform-origin: top; } 55% { transform: scaleY(1); transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }
+
+/* Слово-вивіска: OMNI (тонкий засічковий) + TECH (жирний), як логотип у шапці. На всю ширину рамки,
+   однакова висота великих літер, НІЧОГО не обрізано. Розмір у cqi — відсотках ширини контейнера */
+.hero-mark, .footer-mark { container-type: inline-size; }
+.hero-mark { grid-column: 1 / -1; margin-top: clamp(1.5rem, 4vh, 3rem); padding-bottom: clamp(1.25rem, 4vh, 2.75rem); }
+.mega { display: flex; align-items: baseline; justify-content: space-between; white-space: nowrap; line-height: 1; user-select: none; color: var(--fg); }
+.mega .o { font-family: var(--font-display); font-weight: 300; font-size: var(--mega-o, 19.6cqi); letter-spacing: -.01em; }
+.mega .t { font-family: var(--font-sans); font-weight: 800; font-size: var(--mega-t, 17.64cqi); letter-spacing: -.045em; }
+
+/* ----------------------------- Заголовки секцій (landonorris) ----------------------------- */
+.lockup { display: flex; flex-direction: column; }
+.lockup .serif { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: clamp(1.75rem, 4.2vw, 4.25rem); line-height: 1; color: var(--accent); letter-spacing: -.01em; }
+.lockup .sans { font-family: var(--font-sans); font-weight: 700; text-transform: uppercase; font-size: clamp(2.1rem, 7.2vw, 8rem); line-height: .9; letter-spacing: -.035em; overflow-wrap: anywhere; }
+.lockup-sm .sans { font-size: clamp(1.9rem, 5vw, 5rem); }
+.section { position: relative; isolation: isolate; padding-inline: var(--pad); padding-block: clamp(5rem, 12vh, 9rem); }
+.section-head { display: grid; grid-template-columns: repeat(4, 1fr); align-items: end; gap: 1.5rem 0; }
+.section-head .lockup { grid-column: 1 / -1; }
+.section-head .side { grid-column: 1 / -1; font-size: .95rem; line-height: 1.55; color: var(--fg-muted); max-width: 26rem; }
+@media (min-width: 1024px) {
+  .section-head .lockup { grid-column: 1 / 4; }
+  .section-head .side { grid-column: 4; padding-left: .9rem; }
+}
+.eyebrow { font-size: .75rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--fg-muted); }
+
+/* Інверсна смуга: чорна у світлій темі, кремова в темній. Коли працює WebGL-тло, смугу малює саме воно
+   (разом із лініями), а блок стає прозорим (клас gl-bands на <html>) */
+.tone-invert { position: relative; isolation: isolate; color: var(--inv-fg); background: var(--inv-bg); --fg: var(--inv-fg); --fg-soft: var(--inv-fg); --fg-muted: var(--inv-muted); --accent: var(--inv-accent); --hair: var(--inv-hair); }
+/* Смуга непрозора (контраст тексту вимірюється й гарантований), а контурні лінії всередині — з тієї ж SVG-плитки */
+.tone-invert::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: var(--inv-line); opacity: .2;
+  -webkit-mask: url("/contours.svg") 0 0 / 900px 900px repeat; mask: url("/contours.svg") 0 0 / 900px 900px repeat; }
+.motion-on .tone-invert::before { animation: contour-drift 160s linear infinite; }
+
+/* ----------------------------- Розповідь із закріпленням (santalarch, «двері») ----------------------------- */
+.story { position: relative; padding-inline: var(--pad); padding-block: clamp(4rem, 10vh, 7rem); }
+.story-skip { position: absolute; left: var(--pad); top: 1rem; z-index: 3; }
+.story-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; flex-wrap: wrap; }
+.story-count { font-family: var(--font-display); font-size: clamp(2rem, 3.5vw, 3.5rem); font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1; }
+.story-count .of { color: var(--fg-muted); }
+.story-steps { list-style: none; margin: 3rem 0 0; padding: 0; display: grid; gap: 4rem; }
+.story-step { display: grid; grid-template-columns: 1fr; gap: 1.5rem; border-top: 1px solid var(--hair); padding-top: 1.5rem; }
+.story-step .num { font-size: .75rem; font-weight: 600; letter-spacing: .16em; color: var(--accent); }
+/* Темна тема: смуга розповіді світла (кремова), дрібний золотий підпис — трохи темніший, щоб контраст був з запасом (>= 4,5:1) */
+.dark .tone-invert .story-step .num { color: color-mix(in srgb, var(--accent) 78%, #000); }
+.story-word { font-family: var(--font-sans); font-weight: 700; text-transform: uppercase; font-size: clamp(2.4rem, 7vw, 7.5rem); line-height: .9; letter-spacing: -.04em; }
+.story-text { max-width: 30rem; font-size: clamp(1rem, 1.2vw, 1.25rem); line-height: 1.55; color: var(--fg-soft); }
+.story-art { width: 100%; max-width: 30rem; height: auto; color: var(--accent); }
+.story-art path, .story-art rect, .story-art circle, .story-art line, .story-art polyline { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.story-bar { display: none; }
+@media (min-width: 768px) {
+  .story-step { grid-template-columns: 1fr 1fr; align-items: center; }
+  .story-step .story-art { grid-column: 2; grid-row: 1 / span 3; justify-self: end; }
+}
+/* Закріплений режим (вмикає JS, лише з рухом і на ширині від 768 px) */
+.story.is-pinned { height: 100svh; padding-block: calc(var(--header-h) + 2rem) 2.5rem; display: flex; flex-direction: column; overflow: hidden; }
+.story.is-pinned .story-steps { position: relative; flex: 1; margin-top: 1.5rem; display: block; }
+.story.is-pinned .story-step { position: absolute; inset: 0; border-top: 0; padding-top: 0; grid-template-columns: repeat(4, 1fr); grid-template-rows: auto auto 1fr; gap: 1.25rem 0; visibility: hidden; }
+.story.is-pinned .story-step.is-active { visibility: visible; }
+.story.is-pinned .story-step .num { grid-column: 1 / 3; }
+.story.is-pinned .story-word { grid-column: 1 / 4; font-size: clamp(3rem, 9.5vw, 10.5rem); }
+.story.is-pinned .story-text { grid-column: 1 / 3; align-self: start; }
+.story.is-pinned .story-art { grid-column: 3 / 5; grid-row: 2 / 4; max-width: none; width: 100%; height: 100%; max-height: 52vh; justify-self: stretch; align-self: end; }
+.story.is-pinned .story-bar { display: block; height: 1px; background: var(--hair); position: relative; margin-top: 1rem; }
+.story.is-pinned .story-bar i { position: absolute; inset: 0; background: var(--accent); transform-origin: left; transform: scaleX(var(--p, 0)); }
+/* Закріплення вирішено ще в <head> (клас pin-story): та сама розкладка з першого кадру, перший крок видно,
+   а нижче зарезервовано 4 екрани прокрутки — рівно стільки, скільки додасть GSAP (pin-spacer), тож нічого не зсувається */
+@media (min-width: 768px) {
+  .motion-on.pin-story .story { height: 100svh; padding-block: calc(var(--header-h) + 2rem) 2.5rem; display: flex; flex-direction: column; overflow: hidden; }
+  .motion-on.pin-story .story .story-steps { position: relative; flex: 1; margin-top: 1.5rem; display: block; }
+  .motion-on.pin-story .story .story-step { position: absolute; inset: 0; border-top: 0; padding-top: 0; grid-template-columns: repeat(4, 1fr); grid-template-rows: auto auto 1fr; gap: 1.25rem 0; visibility: hidden; }
+  .motion-on.pin-story .story .story-step.is-active { visibility: visible; }
+  .motion-on.pin-story .story .story-step .num { grid-column: 1 / 3; }
+  .motion-on.pin-story .story .story-word { grid-column: 1 / 4; font-size: clamp(3rem, 9.5vw, 10.5rem); }
+  .motion-on.pin-story .story .story-text { grid-column: 1 / 3; align-self: start; }
+  .motion-on.pin-story .story .story-art { grid-column: 3 / 5; grid-row: 2 / 4; max-width: none; width: 100%; height: 100%; max-height: 52vh; justify-self: stretch; align-self: end; }
+  .motion-on.pin-story .story .story-bar { display: block; height: 1px; background: var(--hair); position: relative; margin-top: 1rem; }
+  .motion-on.pin-story .story .story-bar i { position: absolute; inset: 0; background: var(--accent); transform-origin: left; transform: scaleX(var(--p, 0)); }
+  .motion-on.pin-story .story:not(.is-pinned) .story-step:first-child { visibility: visible; }
+  .motion-on.pin-story .story:not(.is-pinned) { margin-bottom: 400vh; }
+}
+
+/* ----------------------------- Категорії ----------------------------- */
+.cat-list { margin-top: clamp(2.5rem, 6vh, 4rem); border-top: 1px solid var(--hair); }
+.cat-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.5rem 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem .25rem;
+  border-bottom: 1px solid var(--hair);
+  isolation: isolate;
+}
+.cat-row::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--color-gold-loud);
+  clip-path: inset(100% 0 0 0);
+  transition: clip-path var(--dur) var(--ease-out);
+}
+.cat-row .n { font-size: .75rem; font-weight: 600; letter-spacing: .12em; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+.cat-row .name { font-family: var(--font-sans); font-weight: 700; text-transform: uppercase; letter-spacing: -.03em; font-size: clamp(1.35rem, 3.6vw, 3.4rem); line-height: 1; }
+.cat-row .meta { display: flex; align-items: center; gap: 1.25rem; font-size: .875rem; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+.cat-row .art { display: none; width: 5.5rem; color: var(--accent); }
+.cat-row .art svg { width: 100%; height: auto; overflow: visible; }
+.cat-row .art svg * { fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.cat-row .art svg .soft { opacity: .5; }
+.cat-row .art svg .fill { fill: currentColor; stroke: none; }
+@media (min-width: 768px) {
+  .cat-row { grid-template-columns: calc((100vw - 2 * var(--pad)) / 4) 1fr auto; padding-block: 1.4rem; }
+  .cat-row .art { display: block; }
+}
+@media (hover: hover) {
+  .cat-row:hover::before { clip-path: inset(0); }
+  .cat-row:hover, .cat-row:hover .n, .cat-row:hover .meta, .cat-row:hover .art { color: var(--color-ink); }
+}
+
+/* ----------------------------- Картки товарів ----------------------------- */
+.pcard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-card);
+  border: 1px solid var(--hair);
+  border-radius: 4px;
+  transition: border-color var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
+}
+.dark .pcard { background: var(--color-coal); }
+.pcard:hover { border-color: color-mix(in srgb, var(--accent) 60%, transparent); }
+.pcard-media { position: relative; overflow: hidden; border-bottom: 1px solid var(--hair); }
+.pcard-media img { transition: transform var(--dur-slow) var(--ease-out); }
+@media (hover: hover) { .pcard:hover .pcard-media img, .pcard:hover .illo svg { transform: scale(1.04); } }
+.pcard .eyebrow { color: var(--accent); }
+.pcard-title { margin-top: .5rem; font-weight: 600; line-height: 1.35; }
+.pcard-price { font-family: var(--font-display); font-size: 1.75rem; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1; }
+
+/* Ілюстрація товару (замість фото-заглушки): золоті лінії на «кресленні» */
+.illo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  color: var(--color-gold);
+  background:
+    radial-gradient(ellipse 60% 55% at 50% 58%, rgb(226 173 58 / .14), transparent 70%),
+    linear-gradient(var(--hair), var(--hair)) 50% 0 / 1px 100% no-repeat,
+    linear-gradient(var(--hair), var(--hair)) 0 50% / 100% 1px no-repeat,
+    color-mix(in srgb, var(--color-card) 60%, var(--bg));
+}
+.dark .illo { color: var(--color-gold-loud); background:
+    radial-gradient(ellipse 60% 55% at 50% 58%, rgb(226 173 58 / .12), transparent 70%),
+    linear-gradient(var(--hair), var(--hair)) 50% 0 / 1px 100% no-repeat,
+    linear-gradient(var(--hair), var(--hair)) 0 50% / 100% 1px no-repeat,
+    #15120F; }
+.illo svg { width: 74%; height: 74%; overflow: visible; transition: transform var(--dur-slow) var(--ease-out); }
+.illo svg * { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.illo svg .soft { stroke-width: 1; opacity: .55; }
+.illo svg .fill { fill: currentColor; stroke: none; }
+/* Маленькі мініатюри (кошик, адмінка): без сітки, лінії тонші */
+.workshop svg { width: 94%; height: 94%; }
+.workshop svg * { vector-effect: none; stroke-width: 2.2; }
+.workshop svg .soft { stroke-width: 1.4; opacity: .6; }
+.illo-sm { background: color-mix(in srgb, var(--color-card) 60%, var(--bg)); }
+.illo-sm svg { width: 86%; height: 86%; }
+
+/* Стрічка «Популярні» */
+.strip-wide { display: flex; gap: 1px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 1.25rem; margin-top: clamp(2.5rem, 6vh, 4rem); scrollbar-width: thin; }
+.strip-wide > * { flex: 0 0 min(78vw, calc((100vw - 2 * var(--pad)) / 4 - 1px)); scroll-snap-align: start; }
+.strip-wide > .col-span-full { flex: 1 0 100%; }
+
+/* ----------------------------- Переваги, відгуки, заклик ----------------------------- */
+.features { display: grid; grid-template-columns: 1fr; margin-top: clamp(2.5rem, 6vh, 4rem); }
+.feature { padding: 1.75rem 0 2.25rem; border-top: 1px solid var(--hair); }
+.feature .big { font-family: var(--font-display); font-weight: 500; font-size: clamp(3rem, 5vw, 5rem); line-height: .9; color: var(--accent); font-variant-numeric: tabular-nums; }
+.feature h3 { margin-top: 1.25rem; font-weight: 700; text-transform: uppercase; letter-spacing: .02em; font-size: .95rem; }
+.feature p { margin-top: .6rem; line-height: 1.6; color: var(--fg-muted); max-width: 22rem; }
+@media (min-width: 640px) { .features { grid-template-columns: repeat(2, 1fr); } .feature { padding-right: 1.5rem; } }
+@media (min-width: 1024px) { .features { grid-template-columns: repeat(4, 1fr); } .feature { padding-left: .9rem; } }
+
+.quotes { display: grid; gap: 3rem; margin-top: clamp(2.5rem, 6vh, 4rem); }
+@media (min-width: 1024px) { .quotes { grid-template-columns: repeat(3, 1fr); gap: 0; } .quotes figure { padding: 0 2rem 0 .9rem; } }
+.quotes blockquote { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: clamp(1.5rem, 2.2vw, 2.1rem); line-height: 1.18; }
+.quotes figcaption { margin-top: 1.25rem; font-size: .875rem; color: var(--fg-muted); }
+.quotes figcaption b { color: var(--fg); font-weight: 600; }
+
+.cta { display: grid; gap: 2rem; }
+.cta .lockup .sans { font-size: clamp(2.4rem, 8.4vw, 9.5rem); }
+@media (min-width: 1024px) { .cta { grid-template-columns: 3fr 1fr; align-items: end; } }
+
+/* ----------------------------- Підвал ----------------------------- */
+.site-footer { position: relative; isolation: isolate; margin-top: 4rem; border-top: 1px solid var(--hair); overflow: hidden; }
+.footer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem 0; padding: 3rem var(--pad) 0; }
+.footer-grid h2 { font-size: .75rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--fg-muted); }
+.footer-grid ul { margin-top: 1rem; display: grid; gap: .15rem; }
+.footer-grid li a { display: inline-flex; min-height: 2.75rem; align-items: center; font-weight: 500; }
+.footer-grid .col { padding-left: 0; }
+@media (min-width: 1024px) { .footer-grid { grid-template-columns: repeat(4, 1fr); } .footer-grid .col { padding-left: .9rem; } .footer-grid .col:first-child { padding-left: 0; } }
+.footer-mark { margin: 3rem var(--pad) 0; padding-bottom: 1.5rem; }
+.footer-base { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 2rem; padding: 1.25rem var(--pad); border-top: 1px solid var(--hair); font-size: .8125rem; color: var(--fg-muted); }
+
+/* ----------------------------- Заставка (lusion) ----------------------------- */
+/* Поки JS не намалював заставку, екран уже чорний (без «спалаху» сторінки). Якщо JS не спрацював,
+   чорний шар сам зникає через 3,5 с: вміст ніколи не лишається закритим */
+html.intro:not(.intro-live) body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: #0B0A08;
+  pointer-events: none;
+  animation: intro-failsafe .4s linear 3.5s forwards;
+}
+@keyframes intro-failsafe { to { opacity: 0; visibility: hidden; } }
+.intro-overlay { position: fixed; inset: 0; z-index: 200; background: #0B0A08; color: var(--color-paper); }
+.intro-overlay.is-through { pointer-events: none; }
+.intro-bar { position: absolute; left: 50%; top: 50%; width: min(34vw, 22rem); height: 2px; margin-left: calc(min(34vw, 22rem) / -2); background: rgb(226 173 58 / .18); }
+.intro-bar i { position: absolute; inset: 0; background: var(--color-gold-loud); transform-origin: left; transform: scaleX(0); }
+.intro-plus { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+.intro-plus i { position: absolute; background: var(--color-gold-loud); }
+.intro-count {
+  position: absolute;
+  left: var(--pad);
+  bottom: calc(var(--pad) * .5);
+  display: flex;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(5.5rem, 17vw, 16rem);
+  line-height: 1;
+  height: 1em;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -.02em;
+}
+.intro-count .col { display: flex; flex-direction: column; width: .56em; will-change: transform; }
+.intro-count .col span { height: 1em; display: block; text-align: center; }
+.intro-label { position: absolute; right: var(--pad); bottom: calc(var(--pad) * .9); font-size: .75rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: rgb(250 247 240 / .7); }
+
+/* ----------------------------- Смужка прокручування справа (lusion) ----------------------------- */
+.rail { position: fixed; right: max(6px, calc(var(--pad) * .4)); top: 38vh; height: 24vh; width: 2px; z-index: 46; pointer-events: none; background: color-mix(in srgb, var(--fg) 14%, transparent); border-radius: 2px; opacity: 0; transition: opacity var(--dur) var(--ease-out); }
+.rail i { position: absolute; left: 0; right: 0; top: 0; height: 20%; border-radius: 2px; background: var(--accent); transform: translateY(calc(var(--p, 0) * 400%)); }
+.rail.is-on { opacity: 1; }
+.rail.over-invert { background: color-mix(in srgb, var(--inv-fg) 18%, transparent); }
+.rail.over-invert i { background: var(--inv-accent); }
+
+/* ----------------------------- Золота стрічка, що малюється (lusion) ----------------------------- */
+.section { overflow-x: clip; }
+
+/* Лінійні ілюстрації, що «малюються», коли потрапляють в екран (data-draw) */
+.motion-on [data-draw] .dr { stroke-dasharray: 1 1; transition: stroke-dashoffset 1.6s var(--ease-in-out); transition-delay: calc(var(--d, 0) * 70ms); }
+.motion-on [data-draw]:not(.is-in) .dr { stroke-dashoffset: 1; }
+.motion-on [data-draw].is-in .dr { stroke-dashoffset: 0; }
+
+/* «+» у колах акордеона (FAQ): дві риски, на відкритті повертається на 90° і стає «−» */
+.pm { position: relative; display: block; width: 14px; height: 14px; transition: transform var(--dur) var(--ease-out); }
+.pm::before, .pm::after { content: ""; position: absolute; left: 0; top: 6px; width: 14px; height: 2px; border-radius: 2px; background: currentColor; transition: transform var(--dur) var(--ease-out); }
+.pm::after { transform: rotate(90deg); }
+details[open] > summary .pm { transform: rotate(90deg); }
+details[open] > summary .pm::before { transform: scaleX(0); }
+.motion-off .pm, .motion-off .pm::before, .motion-off .pm::after { transition: none; }
+
+/* ----------------------------- Золота «змійка» (layout/snake.js, ідея lusion) -----------------------------
+   Абсолютно розміщена в документі (тіло сторінки — position: relative), ЗА вмістом: блоки-секції
+   мають position: relative і йдуть у розмітці пізніше, тому малюються поверх. Картки непрозорі — лінія ховається за ними. */
+body { position: relative; }
+.snake { position: absolute; left: 0; width: 100%; z-index: 0; pointer-events: none; overflow: visible; }
+.snake path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.snake circle { fill: #B8821F; transition: opacity .2s linear; }
+main, #site-footer { position: relative; z-index: 1; }
+
+/* ----------------------------- Плаваючі фільтри каталогу (ui/floating-filters.js) ----------------------------- */
+.filters-toggle { display: none; }
+/* Список товарів міняється цілком — без «прив'язки прокрутки» браузер не зсуває сторінку за старими картками */
+#products, #pagination { overflow-anchor: none; }
+/* Каталог: компактна «шапка» сторінки — той самий підпис-засічка над великими літерами, але значно нижча за головну */
+.catalog-head { gap: .35rem 0; }
+.catalog-head .lockup .serif { font-size: clamp(1.5rem, 2vw, 1.9rem); } /* >= 24 px: великий текст і на телефоні */
+.catalog-head .lockup .sans { font-size: clamp(1.9rem, 4.4vw, 4.4rem); }
+.catalog-head .side { font-size: .875rem; }
+/* Чіпи, ціна й кількість — в один рядок (переносяться, якщо не вміщаються) */
+#filters:not(.is-floating) .filters-extra { display: flex; flex-wrap: wrap; align-items: center; column-gap: 1rem; }
+#filters:not(.is-floating) .filters-extra > .mt-3 { margin-top: .5rem; }
+#filters:not(.is-floating) .filters-extra details[open] { flex-basis: 100%; }
+#filters:not(.is-floating) .filters-total { margin-left: auto; }
+@media (max-width: 767px) {
+  .catalog-head .side { display: none; }
+  .filters-toggle { display: inline-flex; }
+  /* Пошук — на весь рядок, під ним сортування й «Фільтри» в одному рядку */
+  #filters > div:first-child > div:first-child { flex-basis: 100%; }
+  #filters > div:first-child > div:nth-child(2) { flex: 1 1 0; min-width: 0; }
+  #filters .fs-button { min-width: 0; width: 100%; }
+  #filters .fs-value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  /* Вузький екран: коротка назва сортування замість обрізаної «Спочатку популя…» (повна — для читалок) */
+  .fs-value:has(.fs-short) .fs-full { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  /* Телефон: категорії й ціна — за кнопкою «Фільтри»; кількість знайдених лишається видно */
+  #filters:not(.panel-open) .filters-extra > :not(.filters-total) { display: none; }
+  #filters:not(.is-floating) .filters-total { margin-left: 0; }
+}
+#filters.is-floating { position: fixed; left: 0; right: 0; top: var(--header-h); z-index: 45; margin: 0; padding-block: .6rem;
+  transform: translateY(calc(-100% - var(--header-h))); transition: transform .45s var(--ease-out);
+  box-shadow: 0 18px 30px -24px rgb(12 10 9 / .35); }
+#filters.is-floating.is-shown, #filters.is-floating:has(:focus-visible) { transform: none; }
+html.header-hidden:not(:has(.site-header :focus-visible)) #filters.is-floating { top: 0; }
+#filters.is-floating .filters-toggle { display: inline-flex; }
+#filters.is-floating:not(.panel-open) .filters-extra { display: none; }
+#filters.is-floating .fs-button { min-width: 0; }
+#filters.is-floating .filters-extra { max-height: 60vh; overflow: auto; }
+.motion-off #filters.is-floating { transition: none; }
+
+/* ----------------------------- Випадний список (ui/select.js) ----------------------------- */
+.fs-native { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip-path: inset(50%) !important; white-space: nowrap !important; border: 0 !important; }
+.fs { position: relative; }
+.fs-button { display: inline-flex; min-height: 2.75rem; min-width: 14rem; align-items: center; justify-content: space-between; gap: 1rem; padding: .5rem 1.1rem .5rem 1.25rem;
+  border: 1px solid var(--color-line); border-radius: 999px; background: var(--color-card); color: var(--fg); font-size: 1rem; text-align: left; cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); }
+.dark .fs-button { border-color: var(--color-line-dark); background: var(--color-coal); }
+.fs-button:hover, .fs.is-open .fs-button { border-color: var(--accent); }
+.fs.is-open .fs-button { box-shadow: 0 0 0 3px rgb(226 173 58 / .25); }
+.fs-chevron { width: .55rem; height: .55rem; margin-top: -.25rem; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); transition: transform var(--dur) var(--ease-out); }
+.fs.is-open .fs-chevron { transform: translateY(.3rem) rotate(-135deg); }
+.fs-list { position: absolute; right: 0; top: calc(100% + .5rem); z-index: 60; min-width: 100%; margin: 0; padding: .4rem; list-style: none; border: 1px solid var(--color-line); border-radius: 1.1rem;
+  background: var(--color-card); box-shadow: 0 24px 48px -16px rgb(12 10 9 / .28); opacity: 0; visibility: hidden; transform: translateY(-6px) scale(.98); transform-origin: top right;
+  transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur) var(--ease-out), visibility 0s linear var(--dur); }
+.dark .fs-list { border-color: var(--color-line-dark); background: var(--color-coal); box-shadow: 0 24px 48px -16px rgb(0 0 0 / .7); }
+.fs-list.is-open { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+/* Верхній шар (popover) або перенесений у <body> список: фіксоване положення, координати ставить select.js */
+.fs-list[popover], .fs-list.fs-portal { position: fixed; inset: auto; right: auto; margin: 0; overflow: visible; color: inherit; }
+.fs-list.fs-portal { z-index: 200; }
+.fs-list.is-up { transform-origin: bottom right; }
+@starting-style { .fs-list.is-open { opacity: 0; transform: translateY(-6px) scale(.98); } }
+.fs-list[popover] { color: var(--fg); }
+.fs-short { display: none; }
+@media (max-width: 767px) { .fs-value .fs-short { display: inline; } }
+@media (min-width: 768px) { .fs-value .fs-full { position: static !important; width: auto !important; height: auto !important; clip-path: none !important; } }
+.fs-option { position: relative; display: flex; align-items: center; min-height: 2.75rem; padding: .55rem 2.25rem .55rem 1rem; border-radius: .75rem; white-space: nowrap; cursor: pointer; }
+.fs-option.is-active { background: rgb(226 173 58 / .16); }
+.fs-option[aria-selected="true"] { font-weight: 600; }
+.fs-option[aria-selected="true"]::after { content: ""; position: absolute; right: 1rem; top: 50%; width: .4rem; height: .75rem; margin-top: -.45rem; border-right: 2px solid var(--accent); border-bottom: 2px solid var(--accent); transform: rotate(45deg); }
+.motion-off .fs-list, .motion-off .fs-chevron { transition: none; }
+
+/* Карта: завантажується з openstreetmap.org лише після натискання */
+.map-placeholder { position: relative; isolation: isolate; display: grid; place-items: center; align-content: center; gap: .75rem; width: 100%; height: 100%; min-height: 24rem; padding: 2rem; text-align: center; color: var(--fg); background: color-mix(in srgb, var(--color-card) 70%, var(--bg)); }
+.map-placeholder::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--accent); opacity: .22; -webkit-mask: url("/contours.svg") 0 0 / 600px 600px repeat; mask: url("/contours.svg") 0 0 / 600px 600px repeat; }
+.map-pin { width: 22px; height: 22px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: var(--color-gold-loud); box-shadow: 0 0 0 6px rgb(226 173 58 / .25); }
+
+/* ----------------------------- Курсор-крапка (santalarch) -----------------------------
+   Крапка ЗАМІНЮЄ системну стрілку (клас dot-cursor на <html>). У текстових полях і списках —
+   звичайний системний курсор, а крапка ховається. Без руху клас знімається, і стрілка повертається одразу. */
+html.dot-cursor, html.dot-cursor * { cursor: none !important; }
+html.dot-cursor :is(input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="range"]), textarea, select, [contenteditable="true"]) { cursor: auto !important; }
+.cursor { position: fixed; left: -20px; top: -20px; z-index: 400; width: 40px; height: 40px; pointer-events: none; opacity: 0; transition: opacity .15s linear; }
+.cursor i { display: block; width: 100%; height: 100%; border-radius: 50%; background: var(--color-gold-loud); box-shadow: 0 0 0 3.5px rgb(12 10 9 / .55); transform: scale(.3); transition: transform .35s var(--ease-out), background-color .35s var(--ease-out), box-shadow .35s var(--ease-out); }
+.dark .cursor i { box-shadow: 0 0 0 3.5px rgb(250 247 240 / .5); }
+.cursor.is-on { opacity: 1; }
+.cursor.is-big i { transform: scale(1); background: rgb(226 173 58 / .16); box-shadow: 0 0 0 1.5px var(--color-gold-loud); }
+.cursor.is-field, html:not(.dot-cursor) .cursor { opacity: 0; }
+.motion-off .cursor { display: none; }
+
+/* ----------------------------- Поява слів (santalarch) -----------------------------
+   JS ділить текст на слова-спани (для читалок лишається звичайна прихована копія тексту).
+   Поки JS не розділив текст, елемент прихований ЛИШЕ коли JS працює (клас js), і максимум 6 с. */
+.motion-on [data-reveal]:not(.is-split):not(.is-done) { opacity: 0; animation: reveal-failsafe .3s linear 6s forwards; }
+@keyframes reveal-failsafe { to { opacity: 1; } }
+.motion-on .rw { display: inline-block; opacity: 0; transform: translateY(20px) rotate(3deg); transform-origin: 0 100%; transition: opacity var(--dur-reveal) var(--ease-out), transform var(--dur-reveal) var(--ease-out); transition-delay: calc(var(--wi, 0) * var(--ws, 30ms)); will-change: transform; }
+.motion-on .is-in .rw, .motion-on .rw.is-in { opacity: 1; transform: none; }
+.motion-on .is-out .rw { opacity: 0; transform: translateY(-14px); transition-duration: var(--dur-fast); transition-timing-function: var(--ease-in); transition-delay: 0s; }
+/* Заголовки сторінок зі старим класом .reveal рухаються, але видимі з першого кадру
+   (інакше браузер вважає, що головний вміст з'явився лише після анімації) */
+h1.reveal { animation-name: rise-move; }
+@keyframes rise-move { from { transform: translateY(14px); } to { transform: none; } }
+
+/* Обгортка слів не повинна ламати розкладку (рядки заголовка, flex-колонки) */
+.rw-visual { display: contents; }
+/* Блоки, що «підіймаються» цілком (картки) */
+/* translate (а не transform), щоб не заважати зсуву колонок у каталозі */
+.motion-on [data-rise] { opacity: 0; translate: 0 40px; transition: opacity .9s var(--ease-out), translate .9s var(--ease-out); transition-delay: calc(var(--ri, 0) * 60ms); }
+.motion-on [data-rise].is-in { opacity: 1; translate: none; }
+
+/* ----------------------------- Перехід між сторінками: золота шторка -----------------------------
+   Шторку (layout/transition.js) додаємо на стару сторінку в момент pageswap. Кожна її частина має свою
+   view-transition-name, тому браузер анімує їх окремо (1,1 с): панель і лінії заходять знизу й ідуть угору,
+   OMNI/TECH і назва сторінки рухаються з паралаксом, смужка заповнюється. Стара сторінка ховається,
+   коли панель уже все закрила, а нова з'являється під нею. */
+/* Невидимий елемент з тією ж маскою: браузер завантажує contours.svg заздалегідь, тож лінії на шторці є завжди */
+.vt-preload { position: fixed; left: 0; top: 0; width: 4px; height: 4px; opacity: .01; pointer-events: none; background: #000;
+  -webkit-mask: url("/contours.svg") 0 0 / 760px 760px repeat; mask: url("/contours.svg") 0 0 / 760px 760px repeat; }
+.vt-curtain { position: fixed; inset: 0; z-index: 500; pointer-events: none; overflow: hidden; color: var(--color-ink); }
+.vt-panel { position: absolute; inset: 0; background: var(--color-gold-loud); view-transition-name: vt-panel; }
+.vt-lines { position: absolute; inset: -6vh -5vw; background: #6B4206; opacity: .3; view-transition-name: vt-lines;
+  -webkit-mask: url("/contours.svg") 0 0 / 760px 760px repeat; mask: url("/contours.svg") 0 0 / 760px 760px repeat; }
+.vt-mark { position: absolute; left: 0; right: 0; top: 50%; translate: 0 -55%; display: flex; flex-direction: column; align-items: center; view-transition-name: vt-mark; }
+.vt-mark .mega { justify-content: center; gap: 1.4vw; color: var(--color-ink); }
+.vt-mark .mega .o { font-size: 12.5vw; }
+.vt-mark .mega .t { font-size: 11.25vw; }
+.vt-label { margin-top: 1.2vw; font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: clamp(2rem, 5vw, 5.5rem); line-height: 1; }
+.vt-bar { position: absolute; left: var(--pad); right: var(--pad); bottom: clamp(1.5rem, 5vh, 3rem); height: 2px; background: var(--color-ink); view-transition-name: vt-bar; }
+
+::view-transition-group(*) { animation-duration: 1.1s; }
+::view-transition-old(root) { animation: vt-root-out 1.1s linear both; }
+::view-transition-new(root) { animation: vt-root-in 1.1s linear both; }
+::view-transition-old(vt-panel) { animation: vt-wipe 1.1s var(--ease-in-out) both; }
+::view-transition-old(vt-lines) { animation: vt-wipe 1.1s var(--ease-in-out) both, vt-drift 1.1s linear both; }
+::view-transition-old(vt-mark) { animation: vt-mark 1.1s var(--ease-out) both; }
+::view-transition-old(vt-bar) { transform-origin: left center; animation: vt-bar 1.1s var(--ease-in-out) both; }
+@keyframes vt-root-out { 0%, 49.9% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes vt-root-in { 0%, 49.9% { opacity: 0; } 50%, 100% { opacity: 1; } }
+@keyframes vt-wipe { 0% { clip-path: inset(100% 0 0 0); } 42%, 58% { clip-path: inset(0); } 100% { clip-path: inset(0 0 100% 0); } }
+@keyframes vt-drift { from { transform: translate(0, 2vh); } to { transform: translate(-2vw, -4vh); } }
+@keyframes vt-mark {
+  0%, 22% { opacity: 0; transform: translateY(16vh); }
+  44%, 58% { opacity: 1; transform: none; }
+  84%, 100% { opacity: 0; transform: translateY(-18vh); }
+}
+@keyframes vt-bar {
+  0%, 20% { opacity: 0; transform: scaleX(0); }
+  26% { opacity: 1; }
+  62% { opacity: 1; transform: scaleX(1); }
+  78%, 100% { opacity: 0; transform: scaleX(1) translateY(-2vh); }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}
+
+/* ----------------------------- Запасне тло без WebGL: контури з SVG-плитки ----------------------------- */
+.contours-svg { position: fixed; inset: -10%; z-index: -1; pointer-events: none; background: var(--color-gold); opacity: .2;
+  -webkit-mask: url("/contours.svg") 0 0 / 900px 900px repeat; mask: url("/contours.svg") 0 0 / 900px 900px repeat; }
+.dark .contours-svg { background: var(--color-gold-bright); opacity: .16; }
+.motion-on .contours-svg { animation: contour-drift 140s linear infinite; }
+@keyframes contour-drift { to { -webkit-mask-position: 900px 900px; mask-position: 900px 900px; } }
+.contours-gl { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; }
+
+/* ----------------------------- Каталог ----------------------------- */
+.catalog-grid { display: grid; grid-template-columns: 1fr; gap: 1px; }
+@media (min-width: 640px) { .catalog-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .catalog-grid { grid-template-columns: repeat(4, 1fr); } }
+.catalog-grid > .pcard { will-change: transform; }
+
+/* ----------------------------- Без руху: усе видно одразу ----------------------------- */
+.motion-off .rw, .motion-off [data-rise] { opacity: 1 !important; transform: none !important; translate: none !important; transition: none !important; }
+.motion-off .hero-cue .stem { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .roll > span { transition: none; }
+}

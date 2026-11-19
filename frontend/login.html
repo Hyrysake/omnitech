@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вхід | OmniTech</title>
+  <meta name="description" content="Вхід в акаунт OmniTech.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/src/styles/main.css">
+  <!--boot-->
+  <script type="module" src="/src/pages/login.js"></script>
+</head>
+<body class="flex min-h-dvh flex-col bg-paper font-sans text-ink antialiased dark:bg-ink dark:text-paper">
+  <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-coal focus:px-5 focus:py-3 focus:text-paper">Перейти до вмісту</a>
+  <!-- Шапку й підвал малює JavaScript (src/layout). Висота шапки зарезервована, щоб сторінка не «стрибала» -->
+  <div id="site-header" class="min-h-[65px]"></div>
+  <main id="main" tabindex="-1" class="frame flex-grow pb-24 pt-6 outline-none md:pt-8">
+    <div class="auth-grid">
+      <header class="section-head page-head is-solo">
+        <h1 class="lockup lockup-sm" data-reveal><span class="serif">З поверненням</span><span class="sans">Вхід</span></h1>
+        <p class="side" data-reveal>Увійдіть, щоб оформлювати замовлення швидше й бачити їхню історію.</p>
+      </header>
+
+      <!-- novalidate: перевіряє наш код (src/ui/forms.js), а помилки сервера показуються в тих самих місцях -->
+      <form id="login-form" novalidate class="card auth-card space-y-5 p-6 sm:p-10">
+        <div>
+          <label for="email" class="label">Пошта</label>
+          <input id="email" name="email" type="email" autocomplete="email" maxlength="254" class="input" aria-describedby="email-error">
+          <p id="email-error" class="field-error" hidden></p>
+        </div>
+        <div>
+          <label for="password" class="label">Пароль</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" maxlength="128" class="input" aria-describedby="password-error">
+          <p id="password-error" class="field-error" hidden></p>
+        </div>
+        <div data-form-error class="alert alert-error" role="alert" hidden></div>
+        <button type="submit" class="btn btn-primary w-full">Увійти</button>
+        <p class="muted text-center text-sm">Ще немає акаунта? <a id="register-link" href="/register.html" class="link">Зареєструватися</a></p>
+      </form>
+    </div>
+  </main>
+  <div id="site-footer"></div>
+  <noscript>
+    <p class="mx-auto mb-8 max-w-7xl px-4 text-center">Для роботи магазину потрібно ввімкнути JavaScript у браузері.</p>
+  </noscript>
+</body>
+</html>

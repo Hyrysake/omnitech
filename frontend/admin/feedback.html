@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Повідомлення — адмін-панель | OmniTech</title>
+  <meta name="description" content="Повідомлення покупців із форми «Контакти».">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/src/styles/main.css">
+  <!--boot-->
+  <script type="module" src="/src/pages/admin/feedback.js"></script>
+</head>
+<body class="flex min-h-dvh flex-col bg-paper font-sans text-ink antialiased dark:bg-ink dark:text-paper">
+  <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-coal focus:px-5 focus:py-3 focus:text-paper">Перейти до вмісту</a>
+  <!-- Шапку й підвал малює JavaScript (src/layout). Висота шапки зарезервована, щоб сторінка не «стрибала» -->
+  <div id="site-header" class="min-h-[65px]"></div>
+  <main id="main" tabindex="-1" class="mx-auto w-full max-w-7xl flex-grow px-4 pb-20 pt-8 outline-none sm:px-6 md:pt-12 lg:px-8">
+    <!-- Каркас адмін-панелі: бічне меню (малює src/layout/admin.js) і вміст розділу.
+         Якщо зайшов не адміністратор, увесь блок замінюється повідомленням «Доступ заборонено» -->
+    <div id="admin-root" class="grid grid-cols-1 gap-8 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-10">
+      <nav id="admin-nav" aria-label="Розділи адмін-панелі"></nav>
+      <section class="min-w-0">
+        <div class="card flex flex-col items-center px-6 py-14 text-center"><span class="grid size-16 place-items-center rounded-full bg-gold/10 text-gold dark:bg-gold-bright/15 dark:text-gold-bright"><i class="ph ph-hammer text-3xl" aria-hidden="true"></i></span><h1 class="mt-6 font-display text-3xl font-semibold">Сторінка в розробці</h1><p class="muted mt-3 max-w-md">Ця сторінка ще в розробці. Її замінить автор частини у своєму Pull Request: до того часу тут тимчасова заглушка, щоб меню й посилання працювали.</p></div>
+      </section>
+    </div>
+  </main>
+  <div id="site-footer"></div>
+  <noscript>
+    <p class="mx-auto mb-8 max-w-7xl px-4 text-center">Для роботи магазину потрібно ввімкнути JavaScript у браузері.</p>
+  </noscript>
+</body>
+</html>
