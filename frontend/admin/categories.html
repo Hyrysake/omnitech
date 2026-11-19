@@ -20,7 +20,20 @@
     <div id="admin-root" class="grid grid-cols-1 gap-8 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-10">
       <nav id="admin-nav" aria-label="Розділи адмін-панелі"></nav>
       <section class="min-w-0">
-        <div class="card flex flex-col items-center px-6 py-14 text-center"><span class="grid size-16 place-items-center rounded-full bg-gold/10 text-gold dark:bg-gold-bright/15 dark:text-gold-bright"><i class="ph ph-hammer text-3xl" aria-hidden="true"></i></span><h1 class="mt-6 font-display text-3xl font-semibold">Сторінка в розробці</h1><p class="muted mt-3 max-w-md">Ця сторінка ще в розробці. Її замінить автор частини у своєму Pull Request: до того часу тут тимчасова заглушка, щоб меню й посилання працювали.</p></div>
+        <h1 class="page-title">Категорії</h1>
+        <p class="muted mt-3 text-lg">Категорію, у якій є товари, видалити не можна: спершу перенесіть або видаліть товари.</p>
+
+        <form id="add-form" novalidate class="card mt-8 flex flex-col gap-3 p-5 sm:flex-row sm:items-start">
+          <div class="flex-1">
+            <label for="new-name" class="sr-only">Назва нової категорії</label>
+            <input id="new-name" name="name" type="text" maxlength="50" placeholder="Назва нової категорії" class="input" aria-describedby="new-name-error">
+            <p id="new-name-error" class="field-error" hidden></p>
+            <div data-form-error class="alert alert-error mt-3" role="alert" hidden></div>
+          </div>
+          <button type="submit" class="btn btn-primary"><i class="ph ph-plus" aria-hidden="true"></i> Додати</button>
+        </form>
+
+        <div id="table" class="table-wrap mt-6"></div>
       </section>
     </div>
   </main>
