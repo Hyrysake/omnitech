@@ -15,7 +15,39 @@
   <!-- Шапку й підвал малює JavaScript (src/layout). Висота шапки зарезервована, щоб сторінка не «стрибала» -->
   <div id="site-header" class="min-h-[65px]"></div>
   <main id="main" tabindex="-1" class="frame flex-grow pb-24 pt-6 outline-none md:pt-8">
-    <div class="card flex flex-col items-center px-6 py-14 text-center"><span class="grid size-16 place-items-center rounded-full bg-gold/10 text-gold dark:bg-gold-bright/15 dark:text-gold-bright"><i class="ph ph-hammer text-3xl" aria-hidden="true"></i></span><h1 class="mt-6 font-display text-3xl font-semibold">Сторінка в розробці</h1><p class="muted mt-3 max-w-md">Ця сторінка ще в розробці. Її замінить автор частини у своєму Pull Request: до того часу тут тимчасова заглушка, щоб меню й посилання працювали.</p></div>
+    <!-- Вміст малює src/pages/product.js: номер товару береться з адреси (product.html?id=5) -->
+    <!-- min-h резервує місце під вміст, поки він завантажується: підвал не «стрибає» вниз, коли з'являється товар -->
+    <!-- Каркас сторінки товару вже в HTML: місце фото, назви, ціни й опису видно одразу, ще до відповіді сервера;
+         product.js замінює його справжнім вмістом (render() міняє всі дочірні елементи) -->
+    <article id="product" class="min-h-[40rem]" aria-live="polite" aria-busy="true">
+      <p class="sr-only">Завантаження товару…</p>
+      <div class="pd-grid" aria-hidden="true">
+        <div class="skeleton aspect-square w-full"></div>
+        <div class="flex flex-col gap-4 pt-6">
+          <div class="skeleton h-3 w-1/4"></div>
+          <div class="skeleton h-10 w-4/5"></div>
+          <div class="skeleton h-5 w-1/3"></div>
+          <div class="skeleton h-9 w-2/5"></div>
+          <div class="skeleton mt-4 h-4 w-full"></div>
+          <div class="skeleton h-4 w-11/12"></div>
+          <div class="skeleton h-4 w-3/4"></div>
+          <div class="skeleton mt-4 h-12 w-56 rounded-full"></div>
+        </div>
+      </div>
+    </article>
+
+    <section id="reviews-section" class="mt-24 border-t border-[var(--hair)] pt-12 md:mt-32" aria-labelledby="reviews-title" hidden>
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <h2 id="reviews-title" class="lockup block-lockup" data-reveal><span class="serif">Що кажуть</span><span class="sans">Відгуки покупців</span></h2>
+        <p id="reviews-summary" class="muted flex items-center gap-2"></p>
+      </div>
+      <!-- Форма відгуку: для гостя — запрошення увійти, для покупця — «написати» або «змінити свій» -->
+      <div id="review-form-box" class="mt-8"></div>
+      <div id="reviews-list" class="mt-8 grid gap-4"></div>
+      <div class="mt-6 flex justify-center">
+        <button id="reviews-more" type="button" class="btn btn-secondary" hidden>Показати ще відгуки</button>
+      </div>
+    </section>
   </main>
   <div id="site-footer"></div>
   <noscript>
