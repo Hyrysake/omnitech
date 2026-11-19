@@ -20,7 +20,36 @@
     <div id="admin-root" class="grid grid-cols-1 gap-8 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-10">
       <nav id="admin-nav" aria-label="Розділи адмін-панелі"></nav>
       <section class="min-w-0">
-        <div class="card flex flex-col items-center px-6 py-14 text-center"><span class="grid size-16 place-items-center rounded-full bg-gold/10 text-gold dark:bg-gold-bright/15 dark:text-gold-bright"><i class="ph ph-hammer text-3xl" aria-hidden="true"></i></span><h1 class="mt-6 font-display text-3xl font-semibold">Сторінка в розробці</h1><p class="muted mt-3 max-w-md">Ця сторінка ще в розробці. Її замінить автор частини у своєму Pull Request: до того часу тут тимчасова заглушка, щоб меню й посилання працювали.</p></div>
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <h1 class="page-title">Товари</h1>
+          <a href="/admin/product.html" class="btn btn-primary"><i class="ph ph-plus" aria-hidden="true"></i> Додати товар</a>
+        </div>
+
+        <form id="filters" novalidate class="card mt-8 grid grid-cols-1 gap-4 p-5 sm:grid-cols-3">
+          <div>
+            <label for="q" class="label">Пошук</label>
+            <input id="q" name="q" type="search" maxlength="100" placeholder="Назва або опис" class="input">
+          </div>
+          <div>
+            <label for="category" class="label">Категорія</label>
+            <select id="category" name="category" class="input"><option value="">Усі категорії</option></select>
+          </div>
+          <div>
+            <label for="featured" class="label">На головній</label>
+            <select id="featured" name="featured" class="input">
+              <option value="">Усі товари</option>
+              <option value="true">Лише на головній</option>
+              <option value="false">Не на головній</option>
+            </select>
+          </div>
+          <div class="flex flex-wrap items-center gap-3 sm:col-span-3">
+            <button type="submit" class="btn btn-primary"><i class="ph ph-magnifying-glass" aria-hidden="true"></i> Знайти</button>
+            <p class="muted text-sm" aria-live="polite">Знайдено: <span id="total" class="font-semibold tabular-nums">…</span></p>
+          </div>
+        </form>
+
+        <div id="table" class="table-wrap mt-6"></div>
+        <nav id="pagination" class="mt-8" aria-label="Сторінки списку товарів"></nav>
       </section>
     </div>
   </main>
