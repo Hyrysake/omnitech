@@ -15,7 +15,13 @@
   <!-- Шапку й підвал малює JavaScript (src/layout). Висота шапки зарезервована, щоб сторінка не «стрибала» -->
   <div id="site-header" class="min-h-[65px]"></div>
   <main id="main" tabindex="-1" class="frame flex-grow pb-24 pt-6 outline-none md:pt-8">
-    <div class="card flex flex-col items-center px-6 py-14 text-center"><span class="grid size-16 place-items-center rounded-full bg-gold/10 text-gold dark:bg-gold-bright/15 dark:text-gold-bright"><i class="ph ph-hammer text-3xl" aria-hidden="true"></i></span><h1 class="mt-6 font-display text-3xl font-semibold">Сторінка в розробці</h1><p class="muted mt-3 max-w-md">Ця сторінка ще в розробці. Її замінить автор частини у своєму Pull Request: до того часу тут тимчасова заглушка, щоб меню й посилання працювали.</p></div>
+    <header class="section-head page-head">
+      <h1 class="lockup lockup-sm" data-reveal><span class="serif">Ваш вибір</span><span class="sans">Кошик</span></h1>
+      <p class="side" data-reveal>Перевірте склад замовлення: ціни й суми рахує сервер.</p>
+    </header>
+    <div id="notice" aria-live="polite"></div>
+    <!-- Рядки кошика й підсумок малює src/pages/cart.js; ціни рахує сервер (POST /api/v1/cart/preview) -->
+    <div id="cart" class="mt-8"></div>
   </main>
   <div id="site-footer"></div>
   <noscript>
