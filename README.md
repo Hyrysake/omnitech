@@ -90,6 +90,21 @@ npm run dev
 - Адреса API за замовчуванням — `http://127.0.0.1:8000`. Іншу можна вказати у файлі `frontend/.env` (зразок — `.env.example`).
 - Готовий сайт для розміщення на сервері: `npm run build` (папка `frontend/dist`), перегляд зібраного: `npm run preview`.
 
+### Тести (backend)
+
+У терміналі бекенду, з активованим `.venv` (сервер для тестів запускати не треба, файл `.env` теж не потрібен):
+
+```powershell
+cd backend
+pip install -r requirements-dev.txt
+pytest
+```
+
+- `pytest -v` — назва й результат кожного тесту; `pytest tests/unit` — лише швидкі unit тести.
+- `pytest --cov=app --cov-report=term-missing` — покриття коду тестами.
+- Тести працюють з тимчасовою базою: робоча `backend/data/omnitech.db` не змінюється.
+- Докладно: [TESTING.md](TESTING.md).
+
 ## Структура бекенду
 
 ```text
@@ -349,31 +364,31 @@ frontend/
 
 **Форма «Контакти»** з помилками під полями (Андрій):
 
-![Контакти](lab-reports/screenshots/lab06-makhniuk-contacts.jpg)
+![Контакти](lab-reports/screenshots/lab06-makhniuk-contacts.png)
 
 **Кошик** (Андрій):
 
-![Кошик](lab-reports/screenshots/lab06-makhniuk-cart.jpg)
+![Кошик](lab-reports/screenshots/lab06-makhniuk-cart.png)
 
 **Замовлення оформлено** (Андрій):
 
-![Замовлення](lab-reports/screenshots/lab06-makhniuk-order-done.jpg)
+![Замовлення](lab-reports/screenshots/lab06-makhniuk-order-done.png)
 
 **Адмін: замовлення** (Андрій):
 
-![Адмін: замовлення](lab-reports/screenshots/lab06-makhniuk-admin-orders.jpg)
+![Адмін: замовлення](lab-reports/screenshots/lab06-makhniuk-admin-orders.png)
 
 **Реєстрація з помилками** під кожним полем (Станіслав):
 
-![Реєстрація](lab-reports/screenshots/lab06-bardiuk-register-errors.jpg)
+![Реєстрація](lab-reports/screenshots/lab06-bardiuk-register-errors.png)
 
 **Форма товару** з завантаженим фото (Станіслав):
 
-![Форма товару](lab-reports/screenshots/lab06-bardiuk-product-form.jpg)
+![Форма товару](lab-reports/screenshots/lab06-bardiuk-product-form.png)
 
 **Товари в адмін-панелі** (Станіслав):
 
-![Товари](lab-reports/screenshots/lab06-bardiuk-admin-products.jpg)
+![Товари](lab-reports/screenshots/lab06-bardiuk-admin-products.png)
 
 ## Внесок учасників (лабораторна 06)
 

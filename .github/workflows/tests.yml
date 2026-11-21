@@ -1,0 +1,32 @@
+# GitHub Actions: після кожного push у main і в кожному Pull Request GitHub сам запускає всі тести.
+# Результат видно у PR (зелена галочка або червоний хрестик) і на вкладці Actions репозиторію
+name: Тести
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Отримати код
+        uses: actions/checkout@v5
+
+      - name: Встановити Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+
+      - name: Встановити бібліотеки
+        run: pip install -r requirements-dev.txt
+
+      # SECRET_KEY і тимчасову базу задає tests/conftest.py, тому файл .env тут не потрібен
+      - name: Запустити тести
+        run: pytest -v --cov=app --cov-report=term-missing
