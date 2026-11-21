@@ -1,0 +1,14 @@
+# Lab 08: запуск усього OmniTech однією командою:  docker compose up --build
+# Кожен сервіс описаний у своєму файлі з папки compose/, а тут вони збираються докупи (include).
+# Спільні томи оголошені тут, щоб кожен файл мав до них доступ.
+name: omnitech
+
+include:
+  - compose/backend.yaml    # API (FastAPI + SQLite)
+  - compose/frontend.yaml   # сайт (Vite -> Nginx) і reverse proxy
+  - compose/ops.yaml        # резервні копії бази (профіль ops, окремо від основного запуску)
+
+volumes:
+  omnitech-data:       # SQLite: файл бази й службові файли -wal/-shm
+  omnitech-media:      # завантажені картинки товарів
+  omnitech-backups:    # резервні копії бази

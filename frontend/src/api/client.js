@@ -42,7 +42,7 @@ export function isAbort(error) {
 
 /** Адреса з параметрами: buildUrl('/api/v1/products', {q: 'ноутбук', page: 2}) -> '...?q=...&page=2' */
 function buildUrl(path, query) {
-  const url = new URL(API_URL + path)
+  const url = new URL(API_URL + path, location.origin)
   for (const [key, value] of Object.entries(query ?? {})) {
     // Порожні значення не передаємо зовсім: ?q=&min_price= сервер сприйняв би як помилку
     if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, value)

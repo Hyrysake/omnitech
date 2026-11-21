@@ -14,7 +14,12 @@ from fastapi.staticfiles import StaticFiles
 from app.api.router import TAGS, api_router
 from app.core.config import settings
 from app.core.errors import error_body, register_error_handlers
+from app.core.logging import setup_logging
 from app.db.session import init_db
+
+
+# Логування налаштовується один раз, ще до створення застосунку (у Docker логи йдуть у stdout)
+setup_logging()
 
 
 @asynccontextmanager

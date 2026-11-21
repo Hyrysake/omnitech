@@ -1,5 +1,6 @@
 # OmniTech — інтернет-магазин техніки
 
+[![Docker](https://github.com/Hyrysake/omnitech/actions/workflows/docker.yml/badge.svg)](https://github.com/Hyrysake/omnitech/actions/workflows/docker.yml)
 [![Тести](https://github.com/Hyrysake/omnitech/actions/workflows/tests.yml/badge.svg)](https://github.com/Hyrysake/omnitech/actions/workflows/tests.yml)
 
 Навчальний командний проєкт з дисципліни «Основи програмної інженерії».
@@ -10,13 +11,15 @@ OmniTech складається з двох частин в одному реп�
 
 Бекенд перевіряють автоматичні тести pytest (лабораторна 07): опис і результати — у [TESTING.md](TESTING.md).
 
+Увесь проєкт запускається в контейнерах Docker (лабораторна 08): розділ «Запуск у Docker» нижче, докладна документація — у [docs/docker/](docs/docker/index.md).
+
 ## Команда
 
-| Учасник | Роль | GitHub | Частина API (лабораторна 05) | Частина сайту (лабораторна 06) | Тести (лабораторна 07) |
-|---|---|---|---|---|---|
-| Дмитрук Назар | Team Lead | [@Hyrysake](https://github.com/Hyrysake) | основа: налаштування, база, вхід (JWT), профіль | дизайн-система (теми, шапка, меню, ефекти, спільний вхідний скрипт), головна, каталог з плаваючими фільтрами, сторінка товару з відгуками, список бажань, модерація відгуків | налаштування pytest, тестова база, GitHub Actions; тести основи, входу, профілю |
-| Бардюк Станіслав | QA | [@st009bar-dot](https://github.com/st009bar-dot) | каталог, відгуки, список бажань, картинки, API v2 | реєстрація, профіль, адмін-панель: товари з фото, категорії, користувачі | тести каталогу, картинок, відгуків, списку бажань, API v2 |
-| Махнюк Андрій | Developer | [@rotterdamsterdam](https://github.com/rotterdamsterdam) | кошик, замовлення, зворотний зв'язок, адмін-статистика, Postman | «Про нас», «Контакти», «Часті питання», кошик, оформлення та історія замовлень, адмін: замовлення й повідомлення | тести кошика, замовлень, зворотного зв'язку, статистики |
+| Учасник | Роль | GitHub | Частина API (лабораторна 05) | Частина сайту (лабораторна 06) | Тести (лабораторна 07) | Docker (лабораторна 08) |
+|---|---|---|---|---|---|---|
+| Дмитрук Назар | Team Lead | [@Hyrysake](https://github.com/Hyrysake) | основа: налаштування, база, вхід (JWT), профіль | дизайн-система (теми, шапка, меню, ефекти, спільний вхідний скрипт), головна, каталог з плаваючими фільтрами, сторінка товару з відгуками, список бажань, модерація відгуків | налаштування pytest, тестова база, GitHub Actions; тести основи, входу, профілю | образ бекенду, entrypoint, compose, архітектура, конфігурація, README |
+| Бардюк Станіслав | QA | [@st009bar-dot](https://github.com/st009bar-dot) | каталог, відгуки, список бажань, картинки, API v2 | реєстрація, профіль, адмін-панель: товари з фото, категорії, користувачі | тести каталогу, картинок, відгуків, списку бажань, API v2 | образ сайту, Nginx як reverse proxy, перевірка docker_smoke.py, документ про тестування |
+| Махнюк Андрій | Developer | [@rotterdamsterdam](https://github.com/rotterdamsterdam) | кошик, замовлення, зворотний зв'язок, адмін-статистика, Postman | «Про нас», «Контакти», «Часті питання», кошик, оформлення та історія замовлень, адмін: замовлення й повідомлення | тести кошика, замовлень, зворотного зв'язку, статистики | логування, резервні копії й відновлення бази, розділи про backup і типові проблеми |
 
 ## Технології
 
@@ -31,6 +34,8 @@ OmniTech складається з двох частин в одному реп�
 | Картинки | python-multipart, Pillow | завантаження файлів і перевірка, що це справді картинка |
 | Тестування API | Postman | колекція `backend/postman/postman_collection.json` |
 | Автоматичні тести | pytest, pytest-cov, `TestClient` (httpx2) | unit і integration тести бекенду, покриття коду ([TESTING.md](TESTING.md)) |
+| Контейнери | Docker, Docker Compose (`include`, профілі, томи) | один запуск `docker compose up` на будь-якому комп'ютері; база SQLite у volume |
+| Reverse proxy | Nginx (образ `nginx:alpine`) | віддає зібраний сайт і пересилає `/api` та `/media` на бекенд, тож сайт і API на одній адресі |
 | Безперервна перевірка | GitHub Actions | тести запускаються самі після кожного push і в кожному Pull Request |
 | Клієнтська частина | Vite 8 + JavaScript (ES-модулі), без фреймворків | сервер розробки з миттєвим оновленням, збирання сторінок у `dist/` |
 | Оформлення | Tailwind CSS 4 (npm, плагін `@tailwindcss/vite`) | дизайн-система з лабораторних 03–04: кольори, кнопки, картки, темна тема |
@@ -111,6 +116,11 @@ pytest
 - Тести працюють з тимчасовою базою: робоча `backend/data/omnitech.db` не змінюється.
 - Докладно: [TESTING.md](TESTING.md).
 
+
+## Запуск у Docker (лабораторна 08)
+
+> Розділ у розробці: його заповнить 1-nazar/2-architecture. Запуск за замовчуванням: скопіювати `.env.example`
+> у `.env`, потім `docker compose up --build`. Поки що замість сайту й API працюють заглушки.
 
 ## Структура бекенду
 
@@ -426,31 +436,31 @@ frontend/
 
 **Форма «Контакти»** з помилками під полями (Андрій):
 
-![Контакти](lab-reports/screenshots/lab06-makhniuk-contacts.jpg)
+![Контакти](lab-reports/screenshots/lab06-makhniuk-contacts.png)
 
 **Кошик** (Андрій):
 
-![Кошик](lab-reports/screenshots/lab06-makhniuk-cart.jpg)
+![Кошик](lab-reports/screenshots/lab06-makhniuk-cart.png)
 
 **Замовлення оформлено** (Андрій):
 
-![Замовлення](lab-reports/screenshots/lab06-makhniuk-order-done.jpg)
+![Замовлення](lab-reports/screenshots/lab06-makhniuk-order-done.png)
 
 **Адмін: замовлення** (Андрій):
 
-![Адмін: замовлення](lab-reports/screenshots/lab06-makhniuk-admin-orders.jpg)
+![Адмін: замовлення](lab-reports/screenshots/lab06-makhniuk-admin-orders.png)
 
 **Реєстрація з помилками** під кожним полем (Станіслав):
 
-![Реєстрація](lab-reports/screenshots/lab06-bardiuk-register-errors.jpg)
+![Реєстрація](lab-reports/screenshots/lab06-bardiuk-register-errors.png)
 
 **Форма товару** з завантаженим фото (Станіслав):
 
-![Форма товару](lab-reports/screenshots/lab06-bardiuk-product-form.jpg)
+![Форма товару](lab-reports/screenshots/lab06-bardiuk-product-form.png)
 
 **Товари в адмін-панелі** (Станіслав):
 
-![Товари](lab-reports/screenshots/lab06-bardiuk-admin-products.jpg)
+![Товари](lab-reports/screenshots/lab06-bardiuk-admin-products.png)
 
 ## Внесок учасників (лабораторна 06)
 

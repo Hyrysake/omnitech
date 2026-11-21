@@ -36,9 +36,23 @@ class Settings(BaseSettings):
     # Дев-сервер Vite з Lab 06 працює на порту 5173
     cors_origins: list[str] = ['http://localhost:5173', 'http://127.0.0.1:5173']
 
+    # Docker (лабораторна 08): режим роботи, рівень логів, заповнення порожньої бази при старті контейнера
+    app_env: str = 'development'         # production = JSON-логи, development = читабельні
+    log_level: str = 'INFO'              # DEBUG, INFO, WARNING, ERROR, CRITICAL
+    seed_on_start: bool = False          # true: entrypoint заповнює ПОРОЖНЮ базу демо-даними
+
     # Папка для завантажених файлів і найбільший дозволений розмір картинки
     media_dir: Path = BASE_DIR / 'media'
     max_upload_mb: int = Field(default=5, ge=1, le=50)
+
+    @field_validator('log_level')
+    @classmethod
+    def normalize_log_level(cls, value: str) -> str:
+        """info -> INFO; невідомий рівень не пропускаємо, щоб помилка в .env була видна одразу."""
+        value = value.upper()
+        if value not in ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'):
+            raise ValueError('LOG_LEVEL має бути DEBUG, INFO, WARNING, ERROR або CRITICAL.')
+        return value
 
     @field_validator('secret_key')
     @classmethod
