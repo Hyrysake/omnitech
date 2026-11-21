@@ -1,0 +1,18 @@
+# Режим розробки:  docker compose -f compose.dev.yaml up --build
+# Той самий набір сервісів, але до кожного файлу додається його *.dev.yaml (перезапуск при зміні коду,
+# DEBUG-логи). Другий файл у списку path доповнює і перевизначає перший.
+name: omnitech
+
+include:
+  - path:
+      - compose/backend.yaml
+      - compose/backend.dev.yaml
+  - path:
+      - compose/frontend.yaml
+      - compose/frontend.dev.yaml
+  - compose/ops.yaml
+
+volumes:
+  omnitech-data:
+  omnitech-media:
+  omnitech-backups:

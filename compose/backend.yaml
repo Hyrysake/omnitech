@@ -1,0 +1,27 @@
+# ЗАГЛУШКА (базова мітка lab08-base): просте API, яке відповідає {"status": "stub"}.
+# Справжній образ бекенду замінить цей файл у кроці 1-nazar/1-backend-image.
+# Ім'я сервісу, порт 8000 і перевірка /api/health такі самі, як у справжнього, тож решта файлів уже працює.
+services:
+  backend:
+    image: python:3.13-slim
+    command:
+      - python
+      - -c
+      - |
+        import http.server, json
+        class H(http.server.BaseHTTPRequestHandler):
+            def do_GET(self):
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'status': 'stub'}).encode())
+        http.server.HTTPServer(('0.0.0.0', 8000), H).serve_forever()
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+      start_period: 2s
+    volumes:
+      - omnitech-data:/app/data
+      - omnitech-media:/app/media

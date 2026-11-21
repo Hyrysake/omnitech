@@ -1,0 +1,32 @@
+# ЗАГЛУШКА (базова мітка lab08-base): сторінка «в розробці» + проксі /api і /media на backend.
+# Справжній образ сайту (Vite -> Nginx) замінить цей файл у кроці 2-stanislav/1-frontend-image.
+services:
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+    configs:
+      - source: stub_nginx
+        target: /etc/nginx/conf.d/default.conf
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+configs:
+  stub_nginx:
+    content: |
+      server {
+          listen 80;
+          add_header X-OmniTech-Stub frontend always;
+          location /api/ { proxy_pass http://backend:8000; }
+          location /media/ { proxy_pass http://backend:8000; }
+          location / {
+              default_type text/html;
+              return 200 "<!doctype html><meta charset=utf-8><h1>OmniTech: сторінка в розробці</h1>";
+          }
+      }
