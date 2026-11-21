@@ -29,4 +29,5 @@ jobs:
 
       # SECRET_KEY і тимчасову базу задає tests/conftest.py, тому файл .env тут не потрібен
       - name: Запустити тести
-        run: pytest -v --cov=app --cov-report=term-missing
+        # --cov-fail-under=80: якщо покриття впаде нижче 80 %, перевірка стане червоною
+        run: pytest -v --cov=app --cov-report=term-missing --cov-fail-under=80
