@@ -56,15 +56,15 @@
 
 Мої тести каталогу в `pytest -v`:
 
-![Тести каталогу](screenshots/lab07-bardiuk-catalog-tests.png)
+![Тести каталогу](screenshots/lab07-bardiuk-catalog-tests.jpg)
 
 Навмисна помилка в коді: pytest показує, який тест упав і чому:
 
-![Червоний тест](screenshots/lab07-bardiuk-failing-test.png)
+![Червоний тест](screenshots/lab07-bardiuk-failing-test.jpg)
 
 Вкладка Testing у VS Code:
 
-![VS Code Testing](screenshots/lab07-bardiuk-vscode-testing.png)
+![VS Code Testing](screenshots/lab07-bardiuk-vscode-testing.jpg)
 
 ## Технічні рішення
 
