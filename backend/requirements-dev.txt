@@ -1,0 +1,8 @@
+# Бібліотеки для тестів (лабораторна 07). Встановлення: pip install -r requirements-dev.txt
+# Перший рядок підтягує всі бібліотеки самого застосунку з requirements.txt
+-r requirements.txt
+pytest==9.2.0
+# вимірювання покриття коду тестами: pytest --cov=app
+pytest-cov==7.1.0
+# TestClient з FastAPI надсилає запити через httpx2 (новий Starlette попереджає, що старий httpx застарів)
+httpx2==2.16.0
