@@ -39,7 +39,7 @@
 
 **Посилання:**
 - мої коміти: <https://github.com/Hyrysake/omnitech/commits?author=Hyrysake>
-- мої Pull Request: <https://github.com/Hyrysake/omnitech/pulls?q=is%3Apr+author%3AHyrysake> (номери перед здачею вписати сюди: `gh pr list --state merged --limit 12`)
+- мої Pull Request: <https://github.com/Hyrysake/omnitech/pulls?q=is%3Apr+author%3AHyrysake> (#22 основа, #24 головна й каталог, #28 товар і відгуки, #30 список бажань і модерація, #31 і #32 виправлення)
 
 **Інструменти:** VS Code, Git, GitHub, Node.js, Vite, браузер (DevTools). Частину коду зроблено з допомогою AI (Claude), розібрано й перевірено мною.
 
