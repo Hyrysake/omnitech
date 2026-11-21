@@ -23,6 +23,11 @@ class PageParams:
         return (self.page - 1) * self.size
 
 
+def page_count(total: int, size: int) -> int:
+    """Скільки сторінок потрібно для total записів по size на сторінці: 0 → 0, 12 → 1, 13 → 2."""
+    return ceil(total / size) if total else 0
+
+
 def paginate(db: Session, statement: Select, params: PageParams) -> dict:
     """Виконує запит для однієї сторінки й рахує загальну кількість.
 
@@ -38,5 +43,5 @@ def paginate(db: Session, statement: Select, params: PageParams) -> dict:
         'total': total,
         'page': params.page,
         'size': params.size,
-        'pages': ceil(total / params.size) if total else 0,
+        'pages': page_count(total, params.size),
     }
