@@ -14,6 +14,11 @@ from app.models import Order, OrderItem, OrderStatus, Product, User
 from app.schemas.order import MAX_QUANTITY, CartItemIn, OrderCreate
 
 
+def order_total(prices_and_quantities) -> int:
+    """Сума замовлення: ціна × кількість для кожного рядка. Ціни — цілі гривні, тож округлення немає."""
+    return sum(price * quantity for price, quantity in prices_and_quantities)
+
+
 def _merge_items(items: list[CartItemIn]) -> dict[int, int]:
     """Однаковий товар у кількох рядках об'єднуємо: {product_id: загальна кількість}."""
     merged: dict[int, int] = {}
@@ -41,7 +46,7 @@ def preview_cart(db: Session, items: list[CartItemIn]) -> dict:
         'lines': lines,
         'missing': [product_id for product_id in merged if product_id not in products],
         'count': sum(line['quantity'] for line in lines),
-        'total': sum(line['line_total'] for line in lines),
+        'total': order_total((line['product'].price, line['quantity']) for line in lines),
     }
 
 
@@ -57,7 +62,7 @@ def create_order(db: Session, data: OrderCreate, user: User | None) -> Order:
     order = Order(
         user_id=user.id if user else None,
         customer_name=data.customer_name, phone=data.phone, email=data.email, address=data.address,
-        total=sum(item.price * item.quantity for item in items),
+        total=order_total((item.price, item.quantity) for item in items),
         items=items,
     )
     db.add(order)
