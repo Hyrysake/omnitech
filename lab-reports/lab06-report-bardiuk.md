@@ -1,4 +1,4 @@
-# Звіт з лабораторної роботи 06 «Інтеграція клієнтської частини з API та обробка помилок»
+﻿# Звіт з лабораторної роботи 06 «Інтеграція клієнтської частини з API та обробка помилок»
 
 ## Загальні відомості
 
@@ -27,7 +27,7 @@
 
 **Посилання:**
 - мої коміти: <https://github.com/Hyrysake/omnitech/commits?author=st009bar-dot>
-- мої Pull Request: <https://github.com/Hyrysake/omnitech/pulls?q=is%3Apr+author%3Ast009bar-dot> (номери перед здачею вписати сюди: `gh pr list --state merged --limit 12`)
+- мої Pull Request: <https://github.com/Hyrysake/omnitech/pulls?q=is%3Apr+author%3Ast009bar-dot> (#23 реєстрація й профіль, #26 адмінка каталогу)
 
 **Інструменти:** VS Code, Git, GitHub, Node.js, Vite, браузер (DevTools). Частину коду зроблено з допомогою AI (Claude), розібрано й перевірено мною.
 
@@ -60,15 +60,15 @@
 
 Реєстрація з неправильними даними: кожне поле пояснює свою помилку:
 
-![Помилки реєстрації](screenshots/lab06-bardiuk-register-errors.png)
+![Помилки реєстрації](screenshots/lab06-bardiuk-register-errors.jpg)
 
 Форма товару: товар створено, фото завантажено, повідомлення про успіх:
 
-![Форма товару](screenshots/lab06-bardiuk-product-form.png)
+![Форма товару](screenshots/lab06-bardiuk-product-form.jpg)
 
 Список товарів в адмін-панелі (дані з API):
 
-![Товари в адмінці](screenshots/lab06-bardiuk-admin-products.png)
+![Товари в адмінці](screenshots/lab06-bardiuk-admin-products.jpg)
 
 ## Технічні рішення
 

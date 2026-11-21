@@ -349,31 +349,31 @@ frontend/
 
 **Форма «Контакти»** з помилками під полями (Андрій):
 
-![Контакти](lab-reports/screenshots/lab06-makhniuk-contacts.png)
+![Контакти](lab-reports/screenshots/lab06-makhniuk-contacts.jpg)
 
 **Кошик** (Андрій):
 
-![Кошик](lab-reports/screenshots/lab06-makhniuk-cart.png)
+![Кошик](lab-reports/screenshots/lab06-makhniuk-cart.jpg)
 
 **Замовлення оформлено** (Андрій):
 
-![Замовлення](lab-reports/screenshots/lab06-makhniuk-order-done.png)
+![Замовлення](lab-reports/screenshots/lab06-makhniuk-order-done.jpg)
 
 **Адмін: замовлення** (Андрій):
 
-![Адмін: замовлення](lab-reports/screenshots/lab06-makhniuk-admin-orders.png)
+![Адмін: замовлення](lab-reports/screenshots/lab06-makhniuk-admin-orders.jpg)
 
 **Реєстрація з помилками** під кожним полем (Станіслав):
 
-![Реєстрація](lab-reports/screenshots/lab06-bardiuk-register-errors.png)
+![Реєстрація](lab-reports/screenshots/lab06-bardiuk-register-errors.jpg)
 
 **Форма товару** з завантаженим фото (Станіслав):
 
-![Форма товару](lab-reports/screenshots/lab06-bardiuk-product-form.png)
+![Форма товару](lab-reports/screenshots/lab06-bardiuk-product-form.jpg)
 
 **Товари в адмін-панелі** (Станіслав):
 
-![Товари](lab-reports/screenshots/lab06-bardiuk-admin-products.png)
+![Товари](lab-reports/screenshots/lab06-bardiuk-admin-products.jpg)
 
 ## Внесок учасників (лабораторна 06)
 
