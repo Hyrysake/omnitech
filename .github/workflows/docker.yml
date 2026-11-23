@@ -1,0 +1,44 @@
+# GitHub Actions: перевіряє, що проєкт збирається і запускається в Docker (лабораторна 08).
+# Це також доказ роботи для тих, у кого Docker не запускається на власному комп'ютері.
+name: Docker
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  compose:
+    runs-on: ubuntu-latest
+    env:
+      HTTP_PORT: 8080
+    steps:
+      - name: Отримати код
+        uses: actions/checkout@v5
+
+      - name: Створити .env з прикладу
+        run: cp .env.example .env
+
+      - name: Перевірити compose-файли
+        run: |
+          docker compose config --quiet
+          docker compose -f compose.dev.yaml config --quiet
+
+      - name: Зібрати й запустити (чекаємо, поки всі сервіси стануть healthy)
+        run: docker compose up --build --wait --wait-timeout 180
+
+      - name: Перевірка роботи
+        run: |
+          if [ -f scripts/docker_smoke.py ]; then
+            python3 scripts/docker_smoke.py --no-up
+          else
+            curl --fail --silent http://localhost:8080/api/health
+          fi
+
+      - name: Логи, якщо щось пішло не так
+        if: failure()
+        run: docker compose logs --no-color --tail 100
+
+      - name: Зупинити
+        if: always()
+        run: docker compose down -v

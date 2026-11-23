@@ -1,0 +1,10 @@
+# ЗАГЛУШКА (базова мітка lab08-base): сервіс резервних копій, що нічого не робить.
+# Справжній замінить 3-andrii/1-logging-backup. Профіль ops: звичайний `docker compose up` його не запускає.
+services:
+  backup:
+    image: busybox
+    profiles: [ops]
+    command: ["true"]
+    volumes:
+      - omnitech-data:/app/data
+      - omnitech-backups:/app/backups

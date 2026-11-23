@@ -29,3 +29,8 @@ frontend/dist/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Docker (лабораторна 08): резервні копії бази з комп'ютера й файли SQLite, які створює режим WAL
+backups/
+*.db-wal
+*.db-shm
