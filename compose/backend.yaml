@@ -1,27 +1,40 @@
-# ЗАГЛУШКА (базова мітка lab08-base): просте API, яке відповідає {"status": "stub"}.
-# Справжній образ бекенду замінить цей файл у кроці 1-nazar/1-backend-image.
-# Ім'я сервісу, порт 8000 і перевірка /api/health такі самі, як у справжнього, тож решта файлів уже працює.
+# Сервіс backend: API на FastAPI з базою SQLite. Назовні порт не відкритий: до API ходить Nginx (сервіс frontend).
 services:
   backend:
-    image: python:3.13-slim
-    command:
-      - python
-      - -c
-      - |
-        import http.server, json
-        class H(http.server.BaseHTTPRequestHandler):
-            def do_GET(self):
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({'status': 'stub'}).encode())
-        http.server.HTTPServer(('0.0.0.0', 8000), H).serve_forever()
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')"]
-      interval: 3s
-      timeout: 3s
-      retries: 10
-      start_period: 2s
+    build:
+      context: ../backend            # шляхи в included-файлі рахуються від папки compose/
+    image: omnitech-backend
+    restart: unless-stopped          # сам піднімається після збою; не піднімається, якщо його зупинили вручну
+    environment:
+      # ${ЗМІННА:-типово} читається з файлу .env у корені проєкту; ${ЗМІННА:?} без значення зупиняє запуск
+      SECRET_KEY: ${SECRET_KEY:?Створіть файл .env з .env.example (cp .env.example .env)}
+      APP_ENV: ${APP_ENV:-production}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      SEED_ON_START: ${SEED_ON_START:-true}
+      CORS_ORIGINS: ${CORS_ORIGINS:-[]}
+      PORT: "8000"
     volumes:
+      # Іменовані томи (не bind mount): файл бази й -wal/-shm лежать у volume, права виставлені в образі
       - omnitech-data:/app/data
       - omnitech-media:/app/media
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+    stop_grace_period: 20s
+    read_only: true                  # коренева файлова система лише для читання; писати можна тільки в томи й /tmp
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    logging:                         # логи контейнера: docker compose logs -f backend; старі файли обрізаються
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

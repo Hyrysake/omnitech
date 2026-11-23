@@ -1,0 +1,23 @@
+# Що не потрапляє в образ бекенду (контекст збірки — папка backend)
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.coverage
+htmlcov/
+.env
+*.log
+# база й картинки з вашого комп'ютера: у контейнері вони лежать у volume
+data/
+media/
+# тести й Postman в образ для запуску не потрібні
+tests/
+postman/
+pytest.ini
+.coveragerc
+requirements-dev.txt
+Dockerfile
+.dockerignore

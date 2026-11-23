@@ -1,2 +1,14 @@
-# ЗАГЛУШКА: порожнє доповнення для режиму розробки. Справжнє замінить 1-nazar/1-backend-image.
-services: {}
+# Доповнення для розробки (compose.dev.yaml): код з вашого комп'ютера, автоперезапуск, докладні логи.
+services:
+  backend:
+    command: ["--reload", "--reload-dir", "/app/app"]    # додається до entrypoint: uvicorn --reload
+    restart: "no"
+    environment:
+      APP_ENV: development
+      LOG_LEVEL: DEBUG
+      WATCHFILES_FORCE_POLLING: "true"   # на Windows зміни файлів з bind mount інакше не помітні
+      CORS_ORIGINS: '["http://localhost:${FRONTEND_DEV_PORT:-5173}", "http://127.0.0.1:${FRONTEND_DEV_PORT:-5173}"]'
+    volumes:
+      - ../backend/app:/app/app:ro   # bind mount лише для коду; база лишається в named volume
+    ports:
+      - "${BACKEND_DEV_PORT:-8000}:8000"
