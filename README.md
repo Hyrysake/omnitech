@@ -119,8 +119,66 @@ pytest
 
 ## Запуск у Docker (лабораторна 08)
 
-> Розділ у розробці: його заповнить 1-nazar/2-architecture. Запуск за замовчуванням: скопіювати `.env.example`
-> у `.env`, потім `docker compose up --build`. Поки що замість сайту й API працюють заглушки.
+Увесь проєкт запускається в контейнерах: Nginx віддає сайт і пересилає запити `/api` на бекенд, бекенд зберігає SQLite у volume.
+Потрібні Docker Desktop (на Windows з WSL2) і Git. Python і Node.js на комп'ютері для цього не потрібні.
+
+```bash
+git clone https://github.com/Hyrysake/omnitech.git
+cd omnitech
+cp .env.example .env            # PowerShell: Copy-Item .env.example .env
+docker compose up --build
+```
+
+Сайт: <http://localhost:8080>, документація API: <http://localhost:8080/docs>. Демо-акаунти ті самі, що й вище.
+Зупинити: `docker compose down` (база лишається у volume), стерти й базу: `docker compose down -v`.
+Фоновий запуск з очікуванням готовності: `docker compose up --build --wait -d`, стан: `docker compose ps`.
+
+| Режим | Команда |
+|---|---|
+| Робочий (prod) | `docker compose up --build -d` |
+| Розробка (код з вашої папки, автоперезапуск, сайт на `:5173`) | `docker compose -f compose.dev.yaml up --build` |
+| Копія бази | `docker compose --profile ops run --rm backup python /scripts/backup_db.py` |
+| Повна перевірка | `python scripts/docker_smoke.py` |
+
+### Образи, сервіси й томи
+
+| Сервіс | Образ | Деталі |
+|---|---|---|
+| `backend` | `python:3.13-slim`, багатоетапна збірка, ~248 МБ | FastAPI + Uvicorn (один процес), користувач uid 10001, `HEALTHCHECK` на `/api/health`, `restart: unless-stopped` |
+| `frontend` | `node:22-alpine` (збирання) → `nginx:alpine`, ~99 МБ | зібраний сайт, reverse proxy на `backend`, 404 для невідомих адрес |
+| `backup` | `python:3.13-slim` + скрипти | профіль `ops`: копії й відновлення SQLite через `Connection.backup()` |
+
+| Volume | Папка в контейнері | Що там |
+|---|---|---|
+| `omnitech-data` | `/app/data` | `omnitech.db` і файли WAL; монтується на ПАПКУ, власник uid 10001 задано в образі |
+| `omnitech-media` | `/app/media` | завантажені картинки товарів |
+| `omnitech-backups` | `/app/backups` | резервні копії бази |
+
+Змінні (`HTTP_PORT`, `SECRET_KEY`, `APP_ENV`, `LOG_LEVEL`, `SEED_ON_START`) задаються у `.env`; зразок — `.env.example`, опис — у [docs/docker/config.md](docs/docker/config.md).
+
+### Чому так
+
+- **Багатоетапна збірка й `slim`**: бібліотеки ставляться в окремому етапі, у фінальний образ іде лише готове середовище без кешу pip. Alpine не використано, бо pillow і argon2 під musl збираються гірше.
+- **Кешування шарів**: `requirements.txt` копіюється раніше за код, тому після зміни коду бібліотеки не ставляться заново.
+- **SQLite у named volume на папці**: файли `-wal` і `-shm` потребують папки, у яку можна писати; bind mount на Windows ненадійний для блокувань SQLite.
+- **Один процес Uvicorn**: SQLite підтримує одного писача за раз.
+- **Копії через `backup()`**, а не копіюванням файлу: цілісно навіть під час запису в режимі WAL.
+- **Nginx**: сайт і API на одній адресі, тому CORS не потрібен; `VITE_API_URL` під час збирання порожня.
+
+Докладно: [архітектура](docs/docker/architecture.md), [конфігурація](docs/docker/config.md), [тестування](docs/docker/testing.md), [резервні копії](docs/docker/backup.md), [типові проблеми](docs/docker/troubleshooting.md) (там і що робити, якщо Docker не запускається на вашому комп'ютері).
+
+### Файли Docker у репозиторії
+
+```text
+compose.yaml, compose.dev.yaml     запуск prod і dev (include файлів з compose/)
+compose/                           backend.yaml, frontend.yaml, ops.yaml та їх *.dev.yaml
+.env.example                       зразок налаштувань (справжній .env у Git не потрапляє)
+backend/Dockerfile, .dockerignore  образ API; app/entrypoint.py — старт контейнера
+frontend/Dockerfile, .dockerignore образ сайту; nginx/default.conf — Nginx
+scripts/                           backup_db.py, restore_db.py, docker_smoke.py
+docs/docker/                       документація
+.github/workflows/docker.yml       перевірка Docker у GitHub Actions
+```
 
 ## Структура бекенду
 
@@ -350,6 +408,47 @@ frontend/
 - Токени після входу зберігаються в змінних колекції (`adminToken`, `clientToken`), запити з ними беруть їх самі.
 - Остання папка прибирає створені записи, тож колекцію можна запускати повторно.
 - Тест завантаження картинки бере файл `sample.png` з тієї самої папки.
+
+## Результати (лабораторна 08)
+
+Команди та повна документація: [docs/docker/](docs/docker/index.md). Опис перевірок скрипта: [docs/docker/testing.md](docs/docker/testing.md).
+
+| Що | Як | Результат |
+|---|---|---|
+| Усі тести | `pytest` у папці `backend/` | 317 passed (284 з лабораторної 07, 13 тестів запуску, 13 тестів копій, 7 тестів логування) |
+| Покриття | `pytest --cov=app --cov-report=term-missing` | 96 % коду `app/` |
+| Запуск | `docker compose up --build --wait` | усі сервіси `healthy` |
+| Скрипт перевірки | `python scripts/docker_smoke.py` | 16 pass, 0 fail, 0 skip |
+| Образ бекенду | `docker images` | близько 248 МБ (до оптимізації 295 МБ) |
+| Образ сайту | `docker images` | близько 99 МБ |
+| Кеш шарів | зміна коду, `docker compose build backend` | `COPY requirements.txt` і `pip install` беруться з кешу (`CACHED`) |
+| Збереження даних | реєстрація, `docker compose down`, `docker compose up` | користувач на місці (база у volume) |
+| Перезапуск після збою | `docker compose exec backend sh -c "kill 1"` | `RestartCount` дорівнює 1, сервіс знову `healthy` |
+| Режим розробки | `docker compose -f compose.dev.yaml up --wait` | сайт `:5173` і API `:8000` відповідають 200, Uvicorn перезапускається при зміні файлу |
+| Резервна копія | `backup_db.py`, видалення запису, `restore_db.py` | запис повернувся |
+| Збірка частинами | основа і три пакети у всіх 6 порядках злиття | однаковий результат |
+| Рев'ю | кожен PR перевіряв інший учасник за чеклістом | PR Назара схвалює Станіслав, PR Станіслава й Андрія — Назар |
+
+Перевірка `docker.yml` запускається в GitHub Actions у кожному PR.
+
+## Внесок учасників (лабораторна 08)
+
+| Учасник | Що зроблено | Нових тестів | Звіт |
+|---|---|---|---|
+| Дмитрук Назар | спільна основа (`compose.yaml`, заглушки сервісів, `.env.example`, `docker.yml`, мітка `lab08-base`), образ бекенду, `entrypoint.py`, `compose/backend*.yaml`, `architecture.md`, `config.md`, README | 13 | [lab08-report-dmytruk.md](lab-reports/lab08-report-dmytruk.md) |
+| Бардюк Станіслав | образ сайту, Nginx як reverse proxy, `compose/frontend*.yaml`, скрипт перевірки `docker_smoke.py`, документ про тестування | 0 | [lab08-report-bardiuk.md](lab-reports/lab08-report-bardiuk.md) |
+| Махнюк Андрій | логування, скрипти резервних копій і відновлення, `compose/ops.yaml`, документи про backup і типові проблеми | 20 | [lab08-report-makhniuk.md](lab-reports/lab08-report-makhniuk.md) |
+
+У сумі 33 нових тести: 13 + 20. Разом з 284 тестами лабораторної 07 це 317.
+
+## Висновки (лабораторна 08)
+
+- Увесь проєкт (сайт, API, база) запускається однією командою `docker compose up --build`. Сайт і API стоять за Nginx на одній адресі, тому CORS не потрібен.
+- База SQLite лежить у named volume на папці `/app/data` і переживає `docker compose down`. Папка, а не файл, бо режим WAL створює поруч файли `-wal` і `-shm`. Процес працює не від root (uid 10001).
+- Багатоетапна збірка на `python:3.13-slim` і порядок шарів (спершу `requirements.txt`, потім код) дали образ близько 248 МБ замість 295 і швидку перезбірку.
+- Healthcheck, `depends_on: service_healthy` і `restart: unless-stopped` дозволяють запускати сервіси в потрібному порядку й піднімати бекенд після збою.
+- Резервні копії робимо через `Connection.backup()`, а не копіюванням файлу, бо в режимі WAL файл не містить усіх даних. Перед відновленням поточна база зберігається.
+- Кожен учасник змінював лише свої файли, а заглушки сервісів в основі дозволили перевіряти свою частину, не чекаючи чужих. Основа й три пакети зливаються в будь-якому порядку.
 
 ## Результати тестування (лабораторна 07)
 
