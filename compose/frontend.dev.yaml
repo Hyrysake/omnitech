@@ -1,2 +1,24 @@
-# ЗАГЛУШКА: порожнє доповнення для режиму розробки. Справжнє замінить 2-stanislav/1-frontend-image.
-services: {}
+# Доповнення для розробки (compose.dev.yaml): замість Nginx працює сервер Vite з миттєвим оновленням.
+# Сайт: http://localhost:5173 (порт змінюється через FRONTEND_DEV_PORT), API: http://localhost:8000 (BACKEND_DEV_PORT).
+services:
+  frontend:
+    build:
+      target: dev                    # етап dev з Dockerfile: Node.js і Vite замість Nginx
+    environment:
+      VITE_API_URL: http://localhost:${BACKEND_DEV_PORT:-8000}
+    ports: !override
+      - "${FRONTEND_DEV_PORT:-5173}:5173"
+    volumes:
+      - ../frontend:/app             # код з вашого комп'ютера
+      - /app/node_modules            # пакети лишаються з образу, а не з вашої папки
+    restart: "no"
+    read_only: false
+    tmpfs: !reset []
+    cap_drop: !reset []
+    cap_add: !reset []
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1:5173/"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
