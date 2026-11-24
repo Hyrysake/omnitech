@@ -1,32 +1,40 @@
-# ЗАГЛУШКА (базова мітка lab08-base): сторінка «в розробці» + проксі /api і /media на backend.
-# Справжній образ сайту (Vite -> Nginx) замінить цей файл у кроці 2-stanislav/1-frontend-image.
+# Сервіс frontend: зібраний сайт у Nginx. Це єдина точка входу ззовні: http://localhost:${HTTP_PORT}.
+# Запити /api і /media Nginx пересилає сервісу backend по внутрішній мережі Docker.
 services:
   frontend:
-    image: nginx:alpine
+    build:
+      context: ../frontend
+      args:
+        VITE_API_URL: ""             # порожньо = відносні адреси (/api/...), без CORS
+    image: omnitech-frontend
+    restart: unless-stopped
     ports:
-      - "${HTTP_PORT:-8080}:80"
-    configs:
-      - source: stub_nginx
-        target: /etc/nginx/conf.d/default.conf
+      - "${HTTP_PORT:-8080}:80"      # ліва частина — порт на вашому комп'ютері, змінюється в .env
     depends_on:
       backend:
-        condition: service_healthy
+        condition: service_healthy   # Nginx стартує, коли API вже відповідає
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
-      interval: 3s
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1/healthz"]
+      interval: 15s
       timeout: 3s
-      retries: 10
-
-configs:
-  stub_nginx:
-    content: |
-      server {
-          listen 80;
-          add_header X-OmniTech-Stub frontend always;
-          location /api/ { proxy_pass http://backend:8000; }
-          location /media/ { proxy_pass http://backend:8000; }
-          location / {
-              default_type text/html;
-              return 200 "<!doctype html><meta charset=utf-8><h1>OmniTech: сторінка в розробці</h1>";
-          }
-      }
+      retries: 3
+      start_period: 5s
+    read_only: true                  # Nginx пише лише в ці тимчасові папки
+    tmpfs:
+      - /var/cache/nginx
+      - /run
+      - /tmp
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN                        # потрібні Nginx, щоб запустити робочі процеси від користувача nginx
+      - SETGID
+      - SETUID
+      - NET_BIND_SERVICE
+    security_opt:
+      - no-new-privileges:true
+    logging:                         # access- і error-логи Nginx йдуть у stdout: docker compose logs -f frontend
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

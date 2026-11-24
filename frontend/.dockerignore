@@ -1,0 +1,11 @@
+# Що не потрапляє в контекст збірки сайту (папка frontend)
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+*.log
+.vscode/
+.DS_Store
+Dockerfile
+.dockerignore
