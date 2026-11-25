@@ -1,10 +1,38 @@
-# ЗАГЛУШКА (базова мітка lab08-base): сервіс резервних копій, що нічого не робить.
-# Справжній замінить 3-andrii/1-logging-backup. Профіль ops: звичайний `docker compose up` його не запускає.
+# Сервіс backup: резервні копії бази SQLite. Профіль ops: звичайний `docker compose up` його не чіпає.
+#   разова копія:      docker compose --profile ops run --rm backup python /scripts/backup_db.py
+#   відновлення:       docker compose --profile ops run --rm backup python /scripts/restore_db.py /app/backups/<файл>.db
+#   копія раз на добу: docker compose --profile ops up -d backup
+# Образ збирається тут же (dockerfile_inline): python:3.13-slim + два скрипти, лише стандартна бібліотека.
 services:
   backup:
-    image: busybox
+    build:
+      context: ../scripts
+      dockerfile_inline: |
+        FROM python:3.13-slim
+        # той самий uid 10001, що й у backend: він має право писати в томи data і backups
+        RUN useradd --system --uid 10001 --no-create-home app \
+            && mkdir -p /app/data /app/backups && chown app:app /app/data /app/backups
+        COPY backup_db.py restore_db.py /scripts/
+        USER 10001
+    image: omnitech-backup
     profiles: [ops]
-    command: ["true"]
+    restart: unless-stopped
+    command: ["python", "/scripts/backup_db.py", "--every", "86400"]
+    environment:
+      DATABASE_URL: sqlite:////app/data/omnitech.db
+      BACKUP_DIR: /app/backups
+      BACKUP_KEEP: ${BACKUP_KEEP:-7}
+      PYTHONUNBUFFERED: "1"
     volumes:
-      - omnitech-data:/app/data
+      - omnitech-data:/app/data          # та сама база, що й у backend
       - omnitech-backups:/app/backups
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
